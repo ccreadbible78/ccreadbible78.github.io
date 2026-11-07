@@ -7,7 +7,7 @@ name: 每日讲道自动更新
 
 on:
   schedule:
-    - cron: '10 23 * * *'
+    - cron: '0 1 * * *'
   workflow_dispatch:  # 也可以在 Actions 页点 Run workflow 手动试一次
 
 permissions:
