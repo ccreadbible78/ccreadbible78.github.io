@@ -1,0 +1,32 @@
+# 每日讲道自动更新
+# 每天早上约 7:10（香港时间）由 GitHub 自己的服务器运行：
+# 只读抓思高原站最新讲道，验过 MP3 能打开后，把新条目插到 index.html 顶部并提交。
+# 没新讲道就不提交；MP3 验不过、原站打不开时也不提交、不改文件。
+# 时间是 UTC：23:10 UTC = 第二天 07:10 HKT。GitHub 定时任务可能延迟几分钟到几十分钟，属正常。
+name: 每日讲道自动更新
+
+on:
+  schedule:
+    - cron: '10 23 * * *'
+  workflow_dispatch:  # 也可以在 Actions 页点 Run workflow 手动试一次
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 抓最新讲道并更新 index.html
+        run: python3 scripts/update_homily.py
+      - name: 有变化就提交
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "更新讲道：$(date -u +%Y-%m-%d)"
+          git push
