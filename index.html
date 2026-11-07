@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>每日讲道收听页</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#f6efe0; --paper:#fdfaf2; --paper2:#fffdf7;
+  --ink:#2b2116; --ink2:#5a4a36; --muted:#7a6a55;
+  --deep:#1e1710; --deep2:#2a2117; --deep3:#3a2d1e;
+  --gold:#b9975b; --gold-light:#d6bc85; --gold-dark:#96793f;
+  --line:#e2d5b8; --line-dark:#4a3b27;
+  --red:#6b2d26;
+  --shadow:0 10px 30px rgba(43,33,22,.12);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ivory); color:var(--ink);
+  font-family:"Noto Serif SC","Songti SC","SimSun",serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+}
+a{color:inherit}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 110px}
+
+/* Header */
+.top{
+  background:var(--deep); color:#f3e9d2; text-align:center;
+  padding:28px 20px 26px; position:relative; overflow:hidden;
+}
+.top::after{content:"";position:absolute;left:20px;right:20px;bottom:10px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.cross{font-size:34px;line-height:1;color:var(--gold-light);display:block;margin-bottom:10px;font-family:serif}
+.top h1{margin:0;font-size:30px;letter-spacing:.18em;font-weight:900}
+.top p{margin:6px 0 0;font-size:14px;letter-spacing:.28em;color:#cbbd9a;font-family:"Noto Sans SC",sans-serif}
+.top .latin{margin-top:10px;font-size:12px;letter-spacing:.12em;color:#9a8a68;font-style:italic}
+
+/* Today */
+.datebar{display:flex;align-items:center;justify-content:space-between;padding:18px 2px 12px;gap:12px}
+.datebar .today-label{font-family:"Noto Sans SC",sans-serif;font-size:13px;letter-spacing:.18em;color:var(--gold-dark);font-weight:700}
+.datebar .today-date{font-size:15px;color:var(--ink2)}
+.hero{
+  background:linear-gradient(180deg,var(--deep2),var(--deep));
+  color:#f7efdb;border:1px solid var(--line-dark);border-radius:20px;
+  padding:22px 20px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.hero::before{content:"✝";position:absolute;right:14px;top:6px;font-size:92px;color:rgba(185,151,91,.10);line-height:1}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#1e1710;font-family:"Noto Sans SC",sans-serif;font-weight:800;font-size:13px;letter-spacing:.08em;padding:6px 12px;border-radius:999px}
+.hero h2{margin:16px 0 4px;font-size:28px;line-height:1.3;font-weight:900;letter-spacing:.02em}
+.hero .feast{font-size:18px;color:var(--gold-light);line-height:1.5}
+.hero .gospel{margin-top:14px;padding-top:14px;border-top:1px solid rgba(214,188,133,.28);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hero .gospel b{font-size:19px}
+.hero .gospel span{font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#cbbd9a}
+.verse{margin:16px 0 0;font-size:16.5px;line-height:1.85;color:#e9ddc2}
+.verse small{display:block;margin-top:8px;font-size:13px;color:#a99774;font-family:"Noto Sans SC",sans-serif}
+
+/* Player */
+.player{margin-top:20px;background:rgba(255,255,255,.06);border:1px solid rgba(214,188,133,.25);border-radius:16px;padding:16px}
+.play-row{display:flex;align-items:center;gap:16px}
+.big-play{
+  width:76px;height:76px;flex:0 0 76px;border-radius:50%;border:2px solid var(--gold-light);
+  background:var(--gold);color:#1e1710;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;
+}
+.big-play:active{transform:scale(.97)}
+.big-play svg{width:32px;height:32px;margin-left:3px}
+.big-play .icon-pause{margin-left:0;display:none}
+.is-playing .icon-play{display:none}
+.is-playing .icon-pause{display:block}
+.play-meta{flex:1;min-width:0}
+.play-meta strong{display:block;font-size:17px;line-height:1.4;white-space:normal;word-break:break-word}
+.play-meta span{font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#c9b98f}
+.time{font-variant-numeric:tabular-nums;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#e6d9b8;margin-top:10px;display:flex;justify-content:space-between}
+input[type=range]{width:100%;height:28px;accent-color:var(--gold);cursor:pointer;margin:2px 0 0}
+.controls{display:flex;gap:10px;margin-top:10px}
+.ctrl{
+  flex:1;min-height:48px;border-radius:999px;border:1px solid rgba(214,188,133,.35);
+  background:transparent;color:#f0e3c2;font-family:"Noto Sans SC",sans-serif;font-size:14px;font-weight:700;cursor:pointer;padding:10px 6px;
+}
+.ctrl:active{background:rgba(185,151,91,.2)}
+.status{font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#bfae87;margin-top:10px;min-height:20px}
+
+/* Sections */
+.section-head{margin:28px 2px 12px;display:flex;align-items:end;justify-content:space-between;gap:12px}
+.section-head h3{margin:0;font-size:22px;letter-spacing:.04em}
+.section-head p{margin:0;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:var(--muted)}
+.rule{height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:999px;margin:0 2px 14px;opacity:.9}
+.rule::after{content:"";display:block;height:1px;background:var(--gold);margin-top:1px;opacity:.5}
+
+.list{display:flex;flex-direction:column;gap:12px}
+.item{
+  background:var(--paper2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 14px 16px 16px;display:flex;gap:14px;align-items:center;box-shadow:0 2px 10px rgba(43,33,22,.04);
+}
+.item.active{border-color:var(--gold);background:#fff8e6;box-shadow:0 6px 18px rgba(150,121,63,.14)}
+.datebox{flex:0 0 58px;text-align:center;border-right:1px solid var(--line);padding-right:12px}
+.datebox b{display:block;font-size:24px;line-height:1;color:var(--ink)}
+.datebox span{font-family:"Noto Sans SC",sans-serif;font-size:12px;color:var(--muted)}
+.item-main{flex:1;min-width:0}
+.item-main h4{margin:0;font-size:17.5px;line-height:1.45;font-weight:700}
+.item-main p{margin:4px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5}
+.item-main .meta{font-family:"Noto Sans SC",sans-serif;font-size:12.5px;color:var(--muted);margin-top:5px}
+.mini-play{
+  width:58px;height:58px;flex:0 0 58px;border-radius:50%;border:1.5px solid var(--gold);
+  background:var(--deep);color:var(--gold-light);display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.mini-play svg{width:22px;height:22px;margin-left:2px}
+.item.active .mini-play{background:var(--gold);color:#1e1710}
+
+.sunday{border-left:4px solid var(--gold)}
+.solemn{border-left:4px solid var(--red)}
+
+/* Gospel card */
+.reading{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.reading h4{margin:0 0 8px;font-size:19px}
+.reading p{margin:0;font-size:16.5px;line-height:1.9;color:#3d2f1e}
+.reading .ref{margin-top:12px;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:var(--muted)}
+
+/* Footer / source */
+.source{margin-top:22px;background:#efe6cf;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.source p{margin:0;font-family:"Noto Sans SC",sans-serif;font-size:14px;line-height:1.7;color:var(--ink2)}
+.source a{color:var(--gold-dark);font-weight:700;text-underline-offset:3px}
+.footer{text-align:center;padding:28px 10px 6px;color:var(--muted)}
+.footer .cross{font-size:22px;margin-bottom:6px;color:var(--gold-dark)}
+.footer p{margin:0;font-size:13px;font-family:"Noto Sans SC",sans-serif;line-height:1.7}
+
+/* Sticky mini bar */
+.sticky{
+  position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:20;
+  max-width:656px;margin:0 auto;background:rgba(30,23,16,.97);color:#f3e9d2;border:1px solid var(--line-dark);
+  border-radius:16px;padding:10px 12px;display:none;align-items:center;gap:12px;box-shadow:0 12px 30px rgba(0,0,0,.28);backdrop-filter:blur(8px);
+}
+.sticky.show{display:flex}
+.sticky button{width:52px;height:52px;flex:0 0 52px;border-radius:50%;border:none;background:var(--gold);color:#1e1710;display:grid;place-items:center;cursor:pointer}
+.sticky button svg{width:20px;height:20px}
+.sticky div{flex:1;min-width:0}
+.sticky strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sticky span{font-family:"Noto Sans SC",sans-serif;font-size:12px;color:#c9b98f}
+
+@media(min-width:560px){
+  .top h1{font-size:34px}.hero h2{font-size:32px}.wrap{padding-left:20px;padding-right:20px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="cross">✝</span>
+  <h1>每日讲道</h1>
+  <p>DAILY HOMILY · 每日弥撒讲道收听</p>
+  <div class="latin">Verbum Domini manet in aeternum</div>
+</header>
+
+<main class="wrap">
+
+  <div class="datebar">
+    <span class="today-label">✦ 今日讲道</span>
+    <span class="today-date" id="todayText">2026年11月7日 · 星期六</span>
+  </div>
+
+  <!-- TODAY -->
+  <section class="hero" aria-label="今日讲道">
+    <span class="hero-tag">今日 · 点按即可收听</span>
+    <h2>11月7日 星期六</h2>
+    <div class="feast">常年期第三十一周 星期六</div>
+
+    <div class="gospel">
+      <b>福音：路加福音 16:9-15</b>
+      <span>约 8–9 分钟 · MP3 约 1.5M</span>
+    </div>
+
+    <p class="verse">「你们不能既事奉天主，又事奉钱财。」<small>—— 路 16:13 · 今日福音提醒我们忠信与专一</small></p>
+
+    <div class="player" id="playerBox">
+      <div class="play-row">
+        <button class="big-play" id="bigPlay" aria-label="播放今日讲道">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <div class="play-meta">
+          <strong id="nowTitle">11月7日 · 星期六讲道</strong>
+          <span id="nowSub">路加福音 16:9-15</span>
+          <div class="time"><span id="cur">0:00</span><span id="dur">--:--</span></div>
+        </div>
+      </div>
+      <input type="range" id="seek" value="0" min="0" max="100" step="0.1" aria-label="播放进度">
+      <div class="controls">
+        <button class="ctrl" id="back15">◀◀ 后退 15秒</button>
+        <button class="ctrl" id="fwd15">前进 15秒 ▶▶</button>
+        <button class="ctrl" id="speedBtn">倍速 1.0×</button>
+      </div>
+      <div class="status" id="status">点上方金色大按钮开始收听，可锁屏继续播放。</div>
+    </div>
+  </section>
+
+  <!-- RECENT -->
+  <div class="section-head">
+    <h3>近日讲道</h3><p>点右侧按钮切换</p>
+  </div>
+  <div class="rule"></div>
+
+  <div class="list" id="list">
+    <!-- items injected pattern: data-src data-title data-sub -->
+    <article class="item" data-src="https://www.ccreadbible.net/bona/2026homily/20261106.mp3" data-title="11月6日 · 常年期第三十一周星期五" data-sub="路加福音 16:1-8">
+      <div class="datebox"><b>6</b><span>11月 · 周五</span></div>
+      <div class="item-main"><h4>常年期第三十一周 星期五</h4><p>福音：路加福音 16:1-8</p><div class="meta">约 1.2M · 思高中心</div></div>
+      <button class="mini-play" aria-label="播放11月6日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item" data-src="https://www.ccreadbible.net/bona/2026homily/20261106-1.mp3" data-title="11月6日 · 特敬耶稣圣心 — 炼灵月" data-sub="教会关于「炼灵月」的教导">
+      <div class="datebox"><b>6</b><span>11月 · 特辑</span></div>
+      <div class="item-main"><h4>特敬耶稣圣心 — 炼灵月教导</h4><p>11月特辑 · 教会关于「炼灵月」的教导</p><div class="meta">约 3.3M</div></div>
+      <button class="mini-play" aria-label="播放炼灵月特辑"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item" data-src="https://www.ccreadbible.net/bona/2026homily/20261105.mp3" data-title="11月5日 · 常年期第三十一周星期四" data-sub="路加福音 15:1-10">
+      <div class="datebox"><b>5</b><span>11月 · 周四</span></div>
+      <div class="item-main"><h4>常年期第三十一周 星期四</h4><p>福音：路加福音 15:1-10</p><div class="meta">约 1.4M</div></div>
+      <button class="mini-play" aria-label="播放11月5日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item" data-src="https://www.ccreadbible.net/bona/2026homily/20261104.mp3" data-title="11月4日 · 常年期第三十一周星期三" data-sub="路加福音 14:25-33">
+      <div class="datebox"><b>4</b><span>11月 · 周三</span></div>
+      <div class="item-main"><h4>常年期第三十一周 星期三</h4><p>福音：路加福音 14:25-33</p><div class="meta">约 1.6M</div></div>
+      <button class="mini-play" aria-label="播放11月4日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item" data-src="https://www.ccreadbible.net/bona/2026homily/20261103.mp3" data-title="11月3日 · 常年期第三十一周星期二" data-sub="路加福音 14:15-24">
+      <div class="datebox"><b>3</b><span>11月 · 周二</span></div>
+      <div class="item-main"><h4>常年期第三十一周 星期二</h4><p>福音：路加福音 14:15-24</p><div class="meta">约 1.8M</div></div>
+      <button class="mini-play" aria-label="播放11月3日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item solemn" data-src="https://www.ccreadbible.net/bona/2026homily/20261102.mp3" data-title="11月2日 · 追思已亡" data-sub="玛窦福音 25:31-46">
+      <div class="datebox"><b>2</b><span>11月 · 周一</span></div>
+      <div class="item-main"><h4>追思已亡</h4><p>福音：玛窦福音 25:31-46</p><div class="meta">约 2.8M · 炼灵月</div></div>
+      <button class="mini-play" aria-label="播放11月2日追思已亡讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item solemn sunday" data-src="https://www.ccreadbible.net/bona/2026homily/20261101.mp3" data-title="11月1日 · 诸圣节" data-sub="玛窦福音 5:1-12">
+      <div class="datebox"><b>1</b><span>11月 · 节日</span></div>
+      <div class="item-main"><h4>诸圣节</h4><p>福音：玛窦福音 5:1-12 · 真福八端</p><div class="meta">约 3.1M</div></div>
+      <button class="mini-play" aria-label="播放11月1日诸圣节讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item" data-src="https://www.ccreadbible.net/bona/2026homily/20261030.mp3" data-title="10月30日 · 常年期第三十周星期五" data-sub="路加福音 14:1-6">
+      <div class="datebox"><b>30</b><span>10月 · 周五</span></div>
+      <div class="item-main"><h4>常年期第三十周 星期五</h4><p>福音：路加福音 14:1-6</p><div class="meta">约 1.4M</div></div>
+      <button class="mini-play" aria-label="播放10月30日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item" data-src="https://www.ccreadbible.net/bona/2026homily/20261029.mp3" data-title="10月29日 · 常年期第三十周星期四" data-sub="路加福音 13:31-35">
+      <div class="datebox"><b>29</b><span>10月 · 周四</span></div>
+      <div class="item-main"><h4>常年期第三十周 星期四</h4><p>福音：路加福音 13:31-35</p><div class="meta">约 1.4M</div></div>
+      <button class="mini-play" aria-label="播放10月29日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+
+    <article class="item sunday" data-src="https://www.ccreadbible.net/bona/2026homily/20261025.mp3" data-title="10月25日 · 常年期第三十主日" data-sub="玛窦福音 22:34-40">
+      <div class="datebox"><b>25</b><span>10月 · 主日</span></div>
+      <div class="item-main"><h4>常年期第三十主日</h4><p>福音：玛窦福音 22:34-40</p><div class="meta">约 3.6M · 主日讲道较长</div></div>
+      <button class="mini-play" aria-label="播放10月25日主日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+  </div>
+
+  <div class="section-head"><h3>今日福音默想</h3><p>路加福音</p></div>
+  <div class="rule"></div>
+  <section class="reading">
+    <h4>路加福音 16:9-15</h4>
+    <p>耶稣提醒门徒，要以世上的钱财结交朋友，更要在小事上忠信。人在小事上忠信，在大事上也忠信；天主洞悉人心，世人视为尊贵的，在天主面前可能是可憎恶的。</p>
+    <p style="margin-top:12px">收听时不妨默想：我如何使用时间与金钱？我事奉的是天主，还是钱财？</p>
+    <div class="ref">经文意译提要 · 完整经文请参阅思高版圣经当日读经</div>
+  </section>
+
+  <div class="source">
+    <p><strong>音频来源：</strong>方济会思高读经推广中心每日弥撒讲道。本页为手机收听整理页，方便在手机上直接点播。<br>
+    原站列表：<a href="https://ccreadbible.info/homily/homily-2026-1112.html" target="_blank" rel="noopener">2026年11–12月弥撒讲道</a> · <a href="https://ccreadbible.info/homily/homily-2026-0910.html" target="_blank" rel="noopener">9–10月讲道</a><br>
+    若某日音频加载较慢，请稍等片刻或切换网络后重试。</p>
+  </div>
+
+  <footer class="footer">
+    <span class="cross">✝</span>
+    <p>愿天主的话成为你日用的光。<br>Ad maiorem Dei gloriam · 愈显主荣</p>
+  </footer>
+</main>
+
+<!-- Sticky mini player -->
+<div class="sticky" id="sticky">
+  <button id="stickyPlay" aria-label="播放或暂停">
+    <svg id="stickyIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+  <div><strong id="stickyTitle">今日讲道</strong><span id="stickySub">点按继续收听</span></div>
+</div>
+
+<audio id="audio" preload="metadata" src="https://www.ccreadbible.net/bona/2026homily/20261107.mp3"></audio>
+
+<script>
+(function(){
+  var audio=document.getElementById('audio');
+  var bigPlay=document.getElementById('bigPlay');
+  var playerBox=document.getElementById('playerBox');
+  var seek=document.getElementById('seek');
+  var cur=document.getElementById('cur'), dur=document.getElementById('dur');
+  var nowTitle=document.getElementById('nowTitle'), nowSub=document.getElementById('nowSub');
+  var status=document.getElementById('status');
+  var sticky=document.getElementById('sticky'), stickyPlay=document.getElementById('stickyPlay'), stickyTitle=document.getElementById('stickyTitle'), stickySub=document.getElementById('stickySub'), stickyIcon=document.getElementById('stickyIcon');
+  var currentSrc=audio.src, speeds=[1,1.25,1.5,0.85], si=0, attempted=false;
+  var todaySrc="https://www.ccreadbible.net/bona/2026homily/20261107.mp3";
+
+  function fmt(s){ if(!isFinite(s)||s<0) return "--:--"; s=Math.floor(s); return Math.floor(s/60)+":"+String(s%60).padStart(2,'0'); }
+  function setPlayingUI(playing){
+    playerBox.classList.toggle('is-playing', playing);
+    stickyIcon.innerHTML= playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  }
+  function loadTrack(src,title,sub,autoplay){
+    if(src!==currentSrc){ audio.src=src; currentSrc=src; }
+    nowTitle.textContent=title; nowSub.textContent=sub;
+    stickyTitle.textContent=title; stickySub.textContent=sub;
+    document.querySelectorAll('.item').forEach(function(el){ el.classList.toggle('active', el.getAttribute('data-src')===src); });
+    status.textContent="正在加载…";
+    if(autoplay){ attempted=true; audio.play().catch(function(){ status.textContent="加载中，请再点一次播放。"; }); }
+  }
+  function toggle(){
+    attempted=true;
+    if(audio.paused){ audio.play().catch(function(){ status.textContent="音频加载失败，请检查网络后重试。"; }); }
+    else audio.pause();
+  }
+  bigPlay.addEventListener('click',toggle);
+  stickyPlay.addEventListener('click',toggle);
+  audio.addEventListener('play',function(){ setPlayingUI(true); sticky.classList.add('show'); status.textContent="正在播放 · "+nowTitle.textContent; if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata=new MediaMetadata({title:nowTitle.textContent,artist:'每日弥撒讲道',album:'思高读经推广中心'});}catch(e){} } });
+  audio.addEventListener('pause',function(){ setPlayingUI(false); status.textContent="已暂停，点金色按钮继续。"; });
+  audio.addEventListener('ended',function(){ setPlayingUI(false); status.textContent="播放完毕。愿天主降福你。"; });
+  audio.addEventListener('loadedmetadata',function(){ dur.textContent=fmt(audio.duration); seek.max=audio.duration||100; });
+  audio.addEventListener('durationchange',function(){ dur.textContent=fmt(audio.duration); seek.max=audio.duration||100; });
+  audio.addEventListener('timeupdate',function(){ cur.textContent=fmt(audio.currentTime); if(document.activeElement!==seek) seek.value=audio.currentTime; });
+  audio.addEventListener('waiting',function(){ status.textContent="缓冲中，请稍候…"; });
+  audio.addEventListener('error',function(){ if(attempted) status.textContent="这条音频暂时加载不到，请切换网络后重试，或打开原站收听。"; });
+  seek.addEventListener('input',function(){ audio.currentTime=parseFloat(seek.value); cur.textContent=fmt(audio.currentTime); });
+  document.getElementById('back15').addEventListener('click',function(){ audio.currentTime=Math.max(0,audio.currentTime-15); });
+  document.getElementById('fwd15').addEventListener('click',function(){ audio.currentTime=Math.min(audio.duration||1e9,audio.currentTime+15); });
+  document.getElementById('speedBtn').addEventListener('click',function(e){ si=(si+1)%speeds.length; audio.playbackRate=speeds[si]; e.target.textContent="倍速 "+speeds[si].toFixed(2).replace(/0$/,'')+"×"; });
+
+  document.querySelectorAll('.item').forEach(function(item){
+    item.querySelector('.mini-play').addEventListener('click',function(){
+      var src=item.getAttribute('data-src');
+      if(src===currentSrc){ toggle(); window.scrollTo({top:0,behavior:'smooth'}); return; }
+      loadTrack(src,item.getAttribute('data-title'),item.getAttribute('data-sub'),true);
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+    item.addEventListener('click',function(e){ if(e.target.closest('button')) return; loadTrack(item.getAttribute('data-src'),item.getAttribute('data-title'),item.getAttribute('data-sub'),false); });
+  });
+
+  // Show real today in header date line, but keep hero as latest verified (Nov 7)
+  try{
+    var d=new Date(); var wk=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
+    // Only override label if browsing on Nov 7 2026 context? Keep informative:
+    // document.getElementById('todayText').textContent = d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日 · "+wk;
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
