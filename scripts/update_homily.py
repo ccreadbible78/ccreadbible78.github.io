@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-每日讲道自动更新：只读抓思高原站最新讲道，验过 MP3 能打开后，
-把新条目插到 index.html 顶部的 ENTRIES 数组，并同步更新置顶区。
-音频不下载、不转存，只存原站直链。
+每日讲道自动更新 v2：只读抓思高原站最新讲道，验过 MP3 能打开后，
+把新条目插到 index.html 顶部的 ENTRIES 数组，并同步更新置顶区；
+同时按置顶日期重建“往年今日”区块（过去三年同一天在原站的讲道）。
+- 缺失的中间日期会一并补回（不只补最新一天）。
+- 往年讲道只存原站直链 MP3；文字页逐个核实，存在的才给链接，不存在的行只有音频。
 用法（在仓库根目录）：python3 scripts/update_homily.py
 无新讲道时不改文件，退出码 0；MP3 验不过或原站打不开时不改文件，退出码 1。
 只用 Python 标准库，不需安装任何包。
@@ -19,6 +21,7 @@ BASE_INFO = "https://ccreadbible.info"
 BASE_MP3 = "https://www.ccreadbible.net"
 HEADERS = {"User-Agent": "Mozilla/5.0 (daily-homily-updater; +https://ccreadbible78.github.io)"}
 INDEX_HTML = "index.html"
+PAST_YEARS = 3  # 往年今日往前取几年
 
 CN_DIGIT = {"零": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
             "六": 6, "七": 7, "八": 8, "九": 9}
@@ -68,12 +71,45 @@ def fetch(url, timeout=30, retries=3):
     raise RuntimeError("打不开 %s：%s" % (url, last))
 
 
-def head_mp3(url, timeout=30):
+def head_mp3_info(url, timeout=30):
+    """返回 (是不是可播的音频, 大小文案如 '约3.7M' 或 None)。"""
     req = urllib.request.Request(url, headers=HEADERS, method="HEAD")
     with urllib.request.urlopen(req, timeout=timeout) as r:
         ctype = r.headers.get("Content-Type", "")
         length = r.headers.get("Content-Length", "")
-        return r.status == 200 and ("audio" in ctype or (length and int(length) > 10000))
+        ok = r.status == 200 and ("audio" in ctype or (length and int(length) > 10000))
+        size = None
+        if length:
+            try:
+                size = "约%.1fM" % (int(length) / 1048576)
+            except ValueError:
+                size = None
+        return ok, size
+
+
+def text_page_exists(url, timeout=20):
+    """文字页是否存在：先 HEAD，打不通再 GET 只读 1 字节。"""
+    try:
+        req = urllib.request.Request(url, headers=HEADERS, method="HEAD")
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            if r.status == 200:
+                return True
+    except Exception:  # noqa: BLE001 - HEAD 不通就换 GET 再试
+        pass
+    try:
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            r.read(1)
+            return r.status == 200
+    except Exception:  # noqa: BLE001
+        return False
+    return False
+
+
+def bimonthly_url(year, month):
+    """双月页地址，如 2026 年 11 月 -> homily-2026-1112.html。"""
+    block_start = month - 1 if month % 2 == 0 else month
+    return "%s/homily/homily-%d-%02d%02d.html" % (BASE_INFO, year, block_start, block_start + 1)
 
 
 def parse_monthly_entries(html, want_date):
@@ -112,6 +148,79 @@ def parse_monthly_entries(html, want_date):
     return entries
 
 
+def parse_monthly_row(html, want_ymd):
+    """从月度页里按行找指定日期的主条目（不含 -1 专题）。
+    旧年份月度页标题不是链接、只有裸 <span>，所以按 <tr> 行解析，
+    不依赖文字页链接。返回 dict 或 None。"""
+    for tr in re.finditer(r"<tr[^>]*>(.*?)</tr>", html, flags=re.S | re.I):
+        block = tr.group(1)
+        m = re.search(r"https://www\.ccreadbible\.net/bona/\d+homily/(%s)\.mp3" % re.escape(want_ymd), block)
+        if not m:
+            continue
+        mp3_url = m.group(0)
+        spans = re.findall(r"<span[^>]*>([^<]+)</span>", block)
+        title = spans[0].strip() if spans else ""
+        g = re.search(r"福音[:：]\s*([^<\s]+)", block)
+        gospel = g.group(1).strip() if g else "無"
+        y, mo, d = int(want_ymd[:4]), int(want_ymd[4:6]), int(want_ymd[6:8])
+        return {
+            "date": "%04d-%02d-%02d" % (y, mo, d),
+            "title": title,
+            "gospel": gospel,
+            "mp3_url": mp3_url,
+        }
+    return None
+
+
+def rebuild_past(html, top_date, monthly_cache):
+    """按置顶日期重建往年今日：过去 PAST_YEARS 年同一天的主条目。
+    只改 var PAST 数组和标题行里的日期，行由页面 JS 按 PAST 数组渲染。
+    返回 (html, 往年条数)。"""
+    y, mo, d = int(top_date[:4]), int(top_date[5:7]), int(top_date[8:10])
+    mmdd = "%02d%02d" % (mo, d)
+    past = []
+    for py in range(y - 1, y - 1 - PAST_YEARS, -1):
+        want = "%04d%s" % (py, mmdd)
+        key = (py, mo)
+        if key not in monthly_cache:
+            try:
+                monthly_cache[key] = fetch(bimonthly_url(py, mo))
+            except Exception as e:  # noqa: BLE001
+                print("往年 %d 年月度页打不开，跳过：%s" % (py, e))
+                continue
+        row = parse_monthly_row(monthly_cache[key], want)
+        if not row:
+            continue
+        try:
+            ok, size = head_mp3_info(row["mp3_url"])
+        except Exception as exc:  # noqa: BLE001
+            print("往年 MP3 验不过，跳过 %s：%s" % (row["mp3_url"], exc))
+            continue
+        if not ok:
+            print("往年 MP3 验不过（不是音频或太小），跳过：%s" % row["mp3_url"])
+            continue
+        row["size"] = size or ""
+        text_url = "%s/homily-%d/homily-%s.html" % (BASE_INFO, py, want)
+        if text_page_exists(text_url):
+            row["text_url"] = text_url
+        past.append(row)
+    past_json = json.dumps(past, ensure_ascii=False)
+    html, n = re.subn(r"var PAST = \[.*?\];", "var PAST = %s;" % past_json, html, count=1, flags=re.S)
+    if not n:
+        print("index.html 里找不到 var PAST，往年数组没写进去。")
+    # 标题里的日期：只改“往年今日”同一文本行内的日期（[^<] 跨不过标签，不会碰到各行内容）
+    m = re.search(r"<!-- PAST-YEARS-START -->(.*?)<!-- PAST-YEARS-END -->", html, flags=re.S)
+    if m:
+        sec = m.group(1)
+        sec2, n2 = re.subn(r"(往年今日[^<]{0,80}?)(\d{1,2}月\d{1,2}日)",
+                           r"\g<1>%d月%d日" % (mo, d), sec, count=1)
+        if n2:
+            html = html[:m.start(1)] + sec2 + html[m.end(1):]
+    else:
+        print("index.html 里找不到往年今日标记，标题日期没改。")
+    return html, len(past)
+
+
 def main():
     try:
         html = open(INDEX_HTML, encoding="utf-8").read()
@@ -147,30 +256,42 @@ def main():
         print("已是最新（置顶 %s，最新 %s），不用更新。" % (top_date, latest_date))
         return 0
 
-    # 到该日期所在的双月页里取标题、福音、MP3
-    mo = int(latest_ymd[4:6])
-    block_start = mo - 1 if mo % 2 == 0 else mo
-    monthly_url = "%s/homily/homily-%d-%02d%02d.html" % (
-        BASE_INFO, int(latest_ymd[:4]), block_start, block_start + 1)
-    try:
-        monthly_html = fetch(monthly_url)
-    except Exception as e:  # noqa: BLE001
-        print("月度页打不开：%s" % e)
-        return 1
-    new_entries = parse_monthly_entries(monthly_html, latest_ymd)
-    if not new_entries:
-        print("月度页 %s 里没找到 %s 的条目，已退出（不编造）。" % (monthly_url, latest_ymd))
-        return 1
-    # 只加 ENTRIES 数组里还没有的（注意：置顶区的 <audio src> 里也会出现同一条 MP3，
-    # 所以不能拿整页 html 判断，必须只看 ENTRIES 数组）
+    # 把置顶之后到最新之间的每一天都补回（不只补最新一天），从新到旧收集
+    monthly_cache = {}
+
+    def get_monthly(yy, mm):
+        key = (yy, mm)
+        if key not in monthly_cache:
+            monthly_cache[key] = fetch(bimonthly_url(yy, mm))
+        return monthly_cache[key]
+
+    top_d = datetime.date(int(top_date[:4]), int(top_date[5:7]), int(top_date[8:10]))
+    latest_d = datetime.date(int(latest_ymd[:4]), int(latest_ymd[4:6]), int(latest_ymd[6:8]))
     entries_part = html[m.start():]
-    todo = [e for e in new_entries if e["mp3_url"] not in entries_part]
+    todo = []
+    cur = latest_d
+    while cur > top_d:
+        ymd = "%04d%02d%02d" % (cur.year, cur.month, cur.day)
+        try:
+            page = get_monthly(cur.year, cur.month)
+        except Exception as e:  # noqa: BLE001
+            print("月度页打不开：%s" % e)
+            return 1
+        day_entries = parse_monthly_entries(page, ymd)
+        if not day_entries:
+            print("月度页里没找到 %s 的条目，跳过这一天（不编造）。" % ymd)
+            cur -= datetime.timedelta(days=1)
+            continue
+        for e in day_entries:
+            if e["mp3_url"] not in entries_part and e not in todo:
+                todo.append(e)
+        cur -= datetime.timedelta(days=1)
     if not todo:
         print("最新 %s 已在页面里，不用更新。" % latest_date)
         return 0
     for e in todo:
         try:
-            ok = head_mp3(e["mp3_url"])
+            ok, _size = head_mp3_info(e["mp3_url"])
         except Exception as exc:  # noqa: BLE001
             print("MP3 验不过 %s：%s，已退出（不改文件）。" % (e["mp3_url"], exc))
             return 1
@@ -179,7 +300,7 @@ def main():
             return 1
 
     # ---- 写回 index.html：只改置顶区 + ENTRIES 数组 + 计数/日期范围 ----
-    first = todo[0]  # 正日条目（-1 专题排在后面）
+    first = todo[0]  # 最新一天的正日条目（-1 专题排在后面）
     new_json = ", ".join(json.dumps(e, ensure_ascii=False) for e in todo)
     html = html.replace("var ENTRIES = [", "var ENTRIES = [%s, " % new_json, 1)
 
@@ -228,15 +349,20 @@ def main():
     # 注意：只能改 MISSING 数组那一段，不能在整页替换——新条目本身就含有
     # "2026-11-07" 这个日期，整页替换会把刚插进去的条目也删坏。
     mm = re.search(r"var MISSING = \[[^\]]*\];", html)
-    if mm and ('"%s"' % first["date"]) in mm.group(0):
-        fixed = mm.group(0).replace('"%s", ' % first["date"], "")
-        fixed = fixed.replace('"%s"' % first["date"], "")
+    if mm:
+        fixed = mm.group(0)
+        for e in todo:
+            fixed = fixed.replace('"%s", ' % e["date"], "")
+            fixed = fixed.replace('"%s"' % e["date"], "")
         fixed = fixed.replace(", ]", "]")
         html = html[:mm.start()] + fixed + html[mm.end():]
 
+    # 往年今日：按新的置顶日期重建
+    html, past_count = rebuild_past(html, first["date"], monthly_cache)
+
     open(INDEX_HTML, "w", encoding="utf-8").write(html)
-    print("已更新：新增 %d 条，置顶改为 %s %s（%s），总数 %s 条。"
-          % (len(todo), first["date"], first["title"], gospel_full, total))
+    print("已更新：新增 %d 条，置顶改为 %s %s（%s），总数 %s 条；往年今日 %d 条。"
+          % (len(todo), first["date"], first["title"], gospel_full, total, past_count))
     return 0
 
 
