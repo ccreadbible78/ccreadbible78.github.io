@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-每日讲道自动更新 v2：只读抓思高原站最新讲道，验过 MP3 能打开后，
+每日讲道自动更新 v3：只读抓思高原站最新讲道，验过 MP3 能打开后，
 把新条目插到 index.html 顶部的 ENTRIES 数组，并同步更新置顶区；
-同时按置顶日期重建“往年今日”区块（过去三年同一天在原站的讲道）。
+同时按置顶日期重建“同一礼仪日”区块——同一天主教礼仪日在不同年份的讲道。
 - 缺失的中间日期会一并补回（不只补最新一天）。
+- 同一礼仪日按礼仪身份匹配，不是同一公历日期：
+  庆节（如拉特朗 11 月 9 日）找往年同一庆节；
+  主日按“同一主日＋同一甲/乙/丙年”找（每三年一次，日期会差几天）；
+  平日按“同一周＋同一星期＋同一单/双数年”找（每两年一次）；
+  庆节当天被取代的平日（如 11 月 9 日的常年期三十二週星期一）另成一组。
 - 往年讲道只存原站直链 MP3；文字页逐个核实，存在的才给链接，不存在的行只有音频。
 用法（在仓库根目录）：python3 scripts/update_homily.py
 无新讲道时不改文件，退出码 0；MP3 验不过或原站打不开时不改文件，退出码 1。
@@ -21,7 +26,6 @@ BASE_INFO = "https://ccreadbible.info"
 BASE_MP3 = "https://www.ccreadbible.net"
 HEADERS = {"User-Agent": "Mozilla/5.0 (daily-homily-updater; +https://ccreadbible78.github.io)"}
 INDEX_HTML = "index.html"
-PAST_YEARS = 3  # 往年今日往前取几年
 
 CN_DIGIT = {"零": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
             "六": 6, "七": 7, "八": 8, "九": 9}
@@ -148,78 +152,268 @@ def parse_monthly_entries(html, want_date):
     return entries
 
 
-def parse_monthly_row(html, want_ymd):
-    """从月度页里按行找指定日期的主条目（不含 -1 专题）。
+# ---------------- 同一礼仪日（v3 新增） ----------------
+
+def norm_title(t):
+    """标题归一化，供比对用：去全部空白；旧页的 卅/廿 换成 三十/二十；
+    去掉开头的甲年/乙年/丙年（比对时由候选年份本身保证年循环一致）。"""
+    if not t:
+        return ""
+    s = re.sub(r"\s+", "", t)
+    s = s.replace("卅", "三十").replace("廿", "二十")
+    s = re.sub(r"^(甲年|乙年|丙年)", "", s)
+    return s
+
+
+def classify(top_title, top_date):
+    """把置顶条目的标题分成一类，返回 (kind, key, label)。
+    kind: feast（ dated 庆节）/ sunday / weekday / other。
+    key：比对用的归一化键；label：组标题。"""
+    y, mo, d = int(top_date[:4]), int(top_date[5:7]), int(top_date[8:10])
+    raw = top_title.strip()
+    m = re.match(r"^\s*(\d{1,2})月(\d{1,2})日\s*(.+?)\s*$", raw)
+    if m:
+        return ("feast", norm_title(m.group(3)), m.group(3).strip())
+    nt = norm_title(raw)
+    # 组标题去掉开头的甲/乙/丙年，避免“甲年…… · 甲年”重复
+    base = re.sub(r"^(甲年|乙年|丙年)\s*", "", raw)
+    if "主日" in nt:
+        if "將臨期" in nt or mo == 12:
+            idx = (y - 2022) % 3
+        else:
+            idx = (y - 2023) % 3
+        cyc = ["甲", "乙", "丙"][idx]
+        return ("sunday", nt, "%s · %s年" % (base, cyc))
+    if "星期" in nt:
+        par = "雙數年" if y % 2 == 0 else "單數年"
+        return ("weekday", nt, "%s · %s" % (base, par))
+    return ("other", nt, base)
+
+
+def get_block(cache, year, block_start):
+    """取一页双月页（带缓存）。block_start 是奇数月：1、3、5、7、9、11。"""
+    key = (year, block_start)
+    if key not in cache:
+        cache[key] = fetch(bimonthly_url(year, block_start))
+    return cache[key]
+
+
+def parse_monthly_all(html):
+    """解析一页双月页的全部主条目（不含 -1 专题）。
     旧年份月度页标题不是链接、只有裸 <span>，所以按 <tr> 行解析，
-    不依赖文字页链接。返回 dict 或 None。"""
+    标题取第二个 <td> 去标签后、“福音”之前的文字（不要取第一个 <span>，
+    旧页第一个 <span> 可能是日期或福音）。返回 list[dict]。"""
+    entries = []
     for tr in re.finditer(r"<tr[^>]*>(.*?)</tr>", html, flags=re.S | re.I):
         block = tr.group(1)
-        m = re.search(r"https://www\.ccreadbible\.net/bona/\d+homily/(%s)\.mp3" % re.escape(want_ymd), block)
+        m = re.search(r"https://www\.ccreadbible\.net/bona/\d+homily/(\d{8})(-1)?\.mp3", block)
         if not m:
             continue
-        mp3_url = m.group(0)
-        spans = re.findall(r"<span[^>]*>([^<]+)</span>", block)
-        title = spans[0].strip() if spans else ""
+        ymd = m.group(1)
+        if m.group(2):
+            continue  # -1 专题不参与礼仪日匹配
+        cells = re.findall(r"<td[^>]*>(.*?)</td>", block, flags=re.S | re.I)
+        title = ""
+        if len(cells) >= 2:
+            txt = re.sub(r"<[^>]+>", "", cells[1])
+            title = txt.split("福音")[0].strip()
         g = re.search(r"福音[:：]\s*([^<\s]+)", block)
         gospel = g.group(1).strip() if g else "無"
-        y, mo, d = int(want_ymd[:4]), int(want_ymd[4:6]), int(want_ymd[6:8])
-        return {
+        y, mo, d = int(ymd[:4]), int(ymd[4:6]), int(ymd[6:8])
+        entry = {
             "date": "%04d-%02d-%02d" % (y, mo, d),
             "title": title,
             "gospel": gospel,
-            "mp3_url": mp3_url,
+            "mp3_url": m.group(0),
         }
+        fm = re.match(r"^\s*\d{1,2}月\d{1,2}日\s*(.+?)\s*$", title)
+        entry["feast_name"] = fm.group(1).strip() if fm else None
+        entries.append(entry)
+    return entries
+
+
+def blocks_for_window(year, center_md, days=14):
+    """置顶日期前后 ±days 天覆盖到的双月块，按时间顺序返回 [(年, 块首月)]。
+    同一礼仪日（如主日/平日）在别年会落在相差几天的日期上，用窗口找。"""
+    center = datetime.date(year, center_md[0], center_md[1])
+    blocks = []
+    seen = set()
+    cur = center - datetime.timedelta(days=days)
+    end = center + datetime.timedelta(days=days)
+    while cur <= end:
+        bs = cur.month if cur.month % 2 == 1 else cur.month - 1
+        key = (cur.year, bs)
+        if key not in seen:
+            seen.add(key)
+            blocks.append(key)
+        cur += datetime.timedelta(days=1)
+    return blocks
+
+
+def find_by_title(year, target_norm, center_md, cache):
+    """在候选年份、置顶日期前后两周内，找归一化标题相同的第一条主条目。"""
+    for (yy, bs) in blocks_for_window(year, center_md):
+        try:
+            html = get_block(cache, yy, bs)
+        except Exception as e:  # noqa: BLE001
+            print("月度页打不开，跳过 %d 年 %02d 块：%s" % (yy, bs, e))
+            continue
+        for e in parse_monthly_all(html):
+            if norm_title(e["title"]) == target_norm:
+                return e
     return None
 
 
-def rebuild_past(html, top_date, monthly_cache):
-    """按置顶日期重建往年今日：过去 PAST_YEARS 年同一天的主条目。
-    只改 var PAST 数组和标题行里的日期，行由页面 JS 按 PAST 数组渲染。
-    返回 (html, 往年条数)。"""
-    y, mo, d = int(top_date[:4]), int(top_date[5:7]), int(top_date[8:10])
-    mmdd = "%02d%02d" % (mo, d)
-    past = []
-    for py in range(y - 1, y - 1 - PAST_YEARS, -1):
-        want = "%04d%s" % (py, mmdd)
-        key = (py, mo)
-        if key not in monthly_cache:
-            try:
-                monthly_cache[key] = fetch(bimonthly_url(py, mo))
-            except Exception as e:  # noqa: BLE001
-                print("往年 %d 年月度页打不开，跳过：%s" % (py, e))
-                continue
-        row = parse_monthly_row(monthly_cache[key], want)
-        if not row:
+def find_feast(year, month, day, feast_norm, cache):
+    """在候选年份的同一月日，找庆节名相同的条目（固定日期的庆节）。"""
+    bs = month if month % 2 == 1 else month - 1
+    try:
+        html = get_block(cache, year, bs)
+    except Exception as e:  # noqa: BLE001
+        print("月度页打不开，跳过 %d 年庆节查找：%s" % (year, e))
+        return None
+    for e in parse_monthly_all(html):
+        if e["feast_name"] is None:
             continue
-        try:
-            ok, size = head_mp3_info(row["mp3_url"])
-        except Exception as exc:  # noqa: BLE001
-            print("往年 MP3 验不过，跳过 %s：%s" % (row["mp3_url"], exc))
-            continue
-        if not ok:
-            print("往年 MP3 验不过（不是音频或太小），跳过：%s" % row["mp3_url"])
-            continue
-        row["size"] = size or ""
-        text_url = "%s/homily-%d/homily-%s.html" % (BASE_INFO, py, want)
-        if text_page_exists(text_url):
-            row["text_url"] = text_url
-        past.append(row)
-    past_json = json.dumps(past, ensure_ascii=False)
-    html, n = re.subn(r"var PAST = \[.*?\];", "var PAST = %s;" % past_json, html, count=1, flags=re.S)
-    if not n:
-        print("index.html 里找不到 var PAST，往年数组没写进去。")
-    # 标题里的日期：只改“往年今日”同一文本行内的日期（[^<] 跨不过标签，不会碰到各行内容）
-    m = re.search(r"<!-- PAST-YEARS-START -->(.*?)<!-- PAST-YEARS-END -->", html, flags=re.S)
-    if m:
-        sec = m.group(1)
-        sec2, n2 = re.subn(r"(往年今日[^<]{0,80}?)(\d{1,2}月\d{1,2}日)",
-                           r"\g<1>%d月%d日" % (mo, d), sec, count=1)
-        if n2:
-            html = html[:m.start(1)] + sec2 + html[m.end(1):]
-    else:
-        print("index.html 里找不到往年今日标记，标题日期没改。")
-    return html, len(past)
+        em, ed = int(e["date"][5:7]), int(e["date"][8:10])
+        if (em, ed) == (month, day) and norm_title(e["feast_name"]) == feast_norm:
+            return e
+    return None
 
+
+def verify_entry(entry):
+    """验 MP3 能打开、算大小、核实文字页；验不过返回 None。"""
+    try:
+        ok, size = head_mp3_info(entry["mp3_url"])
+    except Exception as exc:  # noqa: BLE001
+        print("同一礼仪日 MP3 验不过，跳过 %s：%s" % (entry["mp3_url"], exc))
+        return None
+    if not ok:
+        print("同一礼仪日 MP3 验不过（不是音频或太小），跳过：%s" % entry["mp3_url"])
+        return None
+    entry["size"] = size or ""
+    ymd = entry["date"].replace("-", "")
+    text_url = "%s/homily-%s/homily-%s.html" % (BASE_INFO, ymd[:4], ymd)
+    if text_page_exists(text_url):
+        entry["text_url"] = text_url
+    entry.pop("feast_name", None)
+    return entry
+
+
+def parse_entries_index(html):
+    """从 var ENTRIES 数组读出 (date, title) 列表（从新到旧），供找最近的主日锚点用。"""
+    idx = []
+    m = re.search(r"var ENTRIES = \[(.*?)\];", html, flags=re.S)
+    if not m:
+        return idx
+    for em in re.finditer(r'"date":\s*"(\d{4}-\d{2}-\d{2})"[^}]*?"title":\s*"([^"]+)"', m.group(1)):
+        idx.append((em.group(1), em.group(2)))
+    return idx
+
+
+def render_liturgical_block(groups):
+    """渲染同一礼仪日区块的静态 HTML（标题＋各组＋各行）。
+    行用 .past-item（页面 JS 按此 class 绑定点播），组标题用 .lit-group。"""
+    parts = []
+    parts.append('  <div class="section-head">')
+    parts.append('    <h3>同一礼仪日</h3><p>同一天主教礼仪日 · 不同年份的讲道</p>')
+    parts.append('  </div>')
+    parts.append('  <div class="rule"></div>')
+    for g in groups:
+        parts.append('')
+        parts.append('  <div class="lit-group"><h4>%s</h4></div>' % g["label"])
+        parts.append('  <div class="list">')
+        for e in g["entries"]:
+            yy, mm, dd = e["date"][:4], int(e["date"][5:7]), int(e["date"][8:10])
+            parts.append('    <article class="item past-item" data-src="%s">' % e["mp3_url"])
+            parts.append('      <div class="datebox"><b>%s</b><span>%d月%d日</span></div>' % (yy, mm, dd))
+            parts.append('      <div class="item-main">')
+            parts.append('        <h4>%s</h4>' % e["title"])
+            parts.append('        <p>福音：%s</p>' % e["gospel"])
+            parts.append('        <div class="meta">%s年%d月%d日 · MP3 %s · 思高读经推广中心</div>'
+                         % (yy, mm, dd, e.get("size", "").replace("约", "约 ", 1)))
+            parts.append('      </div>')
+            parts.append('      <button class="mini-play" aria-label="播放%s年%d月%d日讲道">'
+                         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>'
+                         % (yy, mm, dd))
+            parts.append('    </article>')
+        parts.append('  </div>')
+    return "\n".join(parts)
+
+
+def build_liturgical(html, top_date, top_title, cache, entries_index):
+    """按置顶日期与标题重建同一礼仪日：重写 var LITURGICAL 数组与标记间的静态区块。
+    返回 (html, 条数, 组数)。"""
+    y, mo, d = int(top_date[:4]), int(top_date[5:7]), int(top_date[8:10])
+    kind, key, label = classify(top_title, top_date)
+    groups = []
+    # 主组：按礼仪身份往回找，直到凑够 3 条（某年缺失就跳过、继续往前找，
+    # 如常年期三十二週星期一：2024、2022 有，2020 是拉特朗庆节、2018 当天原站无讲道，
+    # 要一直找到 2016 才凑满 3 条）。最多往前试 6 个周期，避免原站太旧无数据时空转。
+    step = {"feast": 1, "sunday": 3, "weekday": 2, "other": 1}[kind]
+    main_entries = []
+    py = y - step
+    tries = 0
+    while len(main_entries) < 3 and tries < 6:
+        tries += 1
+        if kind == "feast":
+            found = find_feast(py, mo, d, key, cache)
+        else:
+            found = find_by_title(py, key, (mo, d), cache)
+        if found:
+            v = verify_entry(found)
+            if v:
+                main_entries.append(v)
+        py -= step
+    if main_entries:
+        groups.append({"label": label, "entries": main_entries})
+    # 第二组：庆节当天被取代的平日（仅当置顶是庆节且不是主日）
+    top_wd = datetime.date(y, mo, d).weekday()  # Mon=0 .. Sun=6
+    if kind == "feast" and top_wd != 6:
+        anchor = None
+        for (edate, etitle) in entries_index:
+            if edate <= top_date and "主日" in norm_title(etitle):
+                anchor = (edate, etitle)
+                break
+        if anchor:
+            m2 = re.search(r"(常年期|將臨期|聖誕期|四旬期|復活期)第(.+?)主日",
+                           norm_title(anchor[1]))
+            if m2:
+                season, week_cn = m2.group(1), m2.group(2)
+                wd_char = ["一", "二", "三", "四", "五", "六"][top_wd]
+                target = norm_title("%s第%s週星期%s" % (season, week_cn, wd_char))
+                par = "雙數年" if y % 2 == 0 else "單數年"
+                sub_entries = []
+                py2 = y - 2
+                tries2 = 0
+                while len(sub_entries) < 3 and tries2 < 6:
+                    tries2 += 1
+                    found = find_by_title(py2, target, (mo, d), cache)
+                    if found:
+                        v = verify_entry(found)
+                        if v:
+                            sub_entries.append(v)
+                    py2 -= 2
+                if sub_entries:
+                    sub_label = "%s · %s" % (sub_entries[0]["title"], par)
+                    groups.append({"label": sub_label, "entries": sub_entries})
+    if not groups:
+        print("同一礼仪日没找到往年条目，区块会是空的。")
+    lit_json = json.dumps(groups, ensure_ascii=False)
+    html, n = re.subn(r"var LITURGICAL = \[.*?\];",
+                      "var LITURGICAL = %s;" % lit_json, html, count=1, flags=re.S)
+    if not n:
+        print("index.html 里找不到 var LITURGICAL，同一礼仪日数组没写进去。")
+    block = render_liturgical_block(groups)
+    html, n2 = re.subn(r"<!-- LITURGICAL-START -->.*?<!-- LITURGICAL-END -->",
+                       "<!-- LITURGICAL-START -->\n%s\n  <!-- LITURGICAL-END -->" % block,
+                       html, count=1, flags=re.S)
+    if not n2:
+        print("index.html 里找不到同一礼仪日标记，区块没写进去。")
+    return html, sum(len(g["entries"]) for g in groups), len(groups)
+
+
+# ---------------- 主流程 ----------------
 
 def main():
     try:
@@ -357,12 +551,14 @@ def main():
         fixed = fixed.replace(", ]", "]")
         html = html[:mm.start()] + fixed + html[mm.end():]
 
-    # 往年今日：按新的置顶日期重建
-    html, past_count = rebuild_past(html, first["date"], monthly_cache)
+    # 同一礼仪日：按新的置顶日期与标题重建（组结构＋静态行一并重写）
+    entries_index = parse_entries_index(html)
+    html, lit_count, lit_groups = build_liturgical(
+        html, first["date"], first["title"], monthly_cache, entries_index)
 
     open(INDEX_HTML, "w", encoding="utf-8").write(html)
-    print("已更新：新增 %d 条，置顶改为 %s %s（%s），总数 %s 条；往年今日 %d 条。"
-          % (len(todo), first["date"], first["title"], gospel_full, total, past_count))
+    print("已更新：新增 %d 条，置顶改为 %s %s（%s），总数 %s 条；同一礼仪日 %d 组 %d 条。"
+          % (len(todo), first["date"], first["title"], gospel_full, total, lit_groups, lit_count))
     return 0
 
 
