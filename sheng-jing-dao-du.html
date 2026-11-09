@@ -638,8 +638,7 @@ var BIBLE = [
         listEl.appendChild(sectionEl);
       });
 
-      /* ---------- default state: first group open, the rest collapsed ---------- */
-      if (groupSections.length > 0) setOpen(groupSections[0], true);
+      /* ---------- default state: all groups collapsed ---------- */
       updateToggleAllLabel();
 
       /* ---------- expand / collapse all ---------- */
@@ -749,9 +748,9 @@ var BIBLE = [
             secEl.style.display = visible > 0 ? "" : "none";
             if (visible > 0) setOpen(secEl, true);
           } else {
-            /* cleared: back to default — first group open, the rest collapsed */
+            /* cleared: back to default — all groups collapsed */
             secEl.style.display = "";
-            setOpen(secEl, secEl === groupSections[0]);
+            setOpen(secEl, false);
           }
           visibleTotal += visible;
         });
