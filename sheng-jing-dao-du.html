@@ -729,8 +729,11 @@ var BIBLE = [
       var searchBox = document.getElementById("searchBox");
       var resultNote = document.getElementById("resultNote");
       var emptyNote = document.getElementById("emptyNote");
+      /* the empty-state note must never show while the search box is empty (initial state included) */
+      emptyNote.style.display = "none";
       searchBox.addEventListener("input", function () {
         var q = searchBox.value.trim().toLowerCase();
+        var searching = q.length > 0;
         var visibleTotal = 0;
         document.querySelectorAll("section.group").forEach(function (secEl) {
           var visible = 0;
@@ -755,7 +758,7 @@ var BIBLE = [
           visibleTotal += visible;
         });
         updateToggleAllLabel();
-        emptyNote.style.display = (q && visibleTotal === 0) ? "block" : "none";
+        emptyNote.style.display = (searching && visibleTotal === 0) ? "block" : "none";
         resultNote.textContent = q ? ("找到 " + visibleTotal + " 講") : "";
       });
     </script>
