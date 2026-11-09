@@ -762,6 +762,7 @@ var BIBLE = [
       var searchBox = document.getElementById("searchBox");
       var resultNote = document.getElementById("resultNote");
       var emptyNote = document.getElementById("emptyNote");
+      emptyNote.style.display = "none"; /* initial state: never show before a search */
       searchBox.addEventListener("input", function () {
         var q = searchBox.value.trim().toLowerCase();
         var visibleTotal = 0;
@@ -802,7 +803,11 @@ var BIBLE = [
           visibleTotal += visible;
         });
         updateToggleAllLabel();
-        emptyNote.style.display = (q && visibleTotal === 0) ? "block" : "none";
+        /* empty-state note: only when the search box actually holds text
+           and that search matched nothing — never while the box is empty
+           (initial / cleared state), however many rows are expanded */
+        var hasQuery = searchBox.value.trim().length > 0;
+        emptyNote.style.display = (hasQuery && visibleTotal === 0) ? "block" : "none";
         resultNote.textContent = q ? ("找到 " + visibleTotal + " 講") : "";
       });
     </script>
