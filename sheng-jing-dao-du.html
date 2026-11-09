@@ -638,6 +638,10 @@ var BIBLE = [
         listEl.appendChild(sectionEl);
       });
 
+      /* ---------- default state: first group open, the rest collapsed ---------- */
+      if (groupSections.length > 0) setOpen(groupSections[0], true);
+      updateToggleAllLabel();
+
       /* ---------- expand / collapse all ---------- */
       document.getElementById("toggleAll").addEventListener("click", function () {
         var anyClosed = groupSections.some(function (s) { return !s.classList.contains("open"); });
@@ -745,9 +749,9 @@ var BIBLE = [
             secEl.style.display = visible > 0 ? "" : "none";
             if (visible > 0) setOpen(secEl, true);
           } else {
-            /* cleared: back to all groups collapsed */
+            /* cleared: back to default — first group open, the rest collapsed */
             secEl.style.display = "";
-            setOpen(secEl, false);
+            setOpen(secEl, secEl === groupSections[0]);
           }
           visibleTotal += visible;
         });
