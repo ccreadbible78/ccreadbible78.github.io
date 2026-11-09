@@ -172,17 +172,36 @@
       }
 
       section.group .grule { height: 2px; background: var(--gold); opacity: 0.55; margin-bottom: 12px; }
-      .group-body {
-        display: grid; grid-template-rows: 0fr; visibility: hidden;
-        transition: grid-template-rows 0.38s ease, visibility 0s linear 0.38s;
-      }
-      section.group.open .group-body {
-        grid-template-rows: 1fr; visibility: visible;
-        transition: grid-template-rows 0.38s ease, visibility 0s;
-      }
+      .group-body { display: none; }
+      section.group.open .group-body { display: grid; grid-template-rows: 1fr; }
       .group-body-inner { overflow: hidden; min-height: 0; }
+
+      /* ---------- subgroups (inside 福音) ---------- */
+      .subgroup { margin: 2px 0 14px; }
+      .subgroup h3 { margin: 0; }
+      .subgroup-toggle {
+        width: 100%; min-height: 54px;
+        display: flex; align-items: center; gap: 9px;
+        font-family: inherit; color: var(--ink); text-align: left;
+        background: var(--bg-soft); border: 1px solid var(--line); border-radius: 10px;
+        cursor: pointer; box-shadow: var(--shadow);
+        padding: 10px 14px; margin: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .subgroup-toggle:active { opacity: 0.7; }
+      .subgroup-toggle .sname { font-size: 20.5px; font-weight: 900; line-height: 1.3; }
+      .subgroup-toggle .scount { font-size: 14px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+      .subgroup-toggle .shint { margin-left: auto; font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; }
+      .subgroup-toggle .indicator {
+        flex: 0 0 auto; font-size: 16px; line-height: 1; color: var(--gold);
+        transition: transform 0.3s ease;
+      }
+      .subgroup-body { display: none; }
+      .subgroup.open .subgroup-body { display: grid; grid-template-rows: 1fr; }
+      .subgroup-body-inner { overflow: hidden; min-height: 0; padding-top: 10px; }
       @media (prefers-reduced-motion: reduce) {
-        .group-body, section.group.open .group-body, .group-toggle .indicator { transition: none; }
+        .group-body, section.group.open .group-body, .group-toggle .indicator,
+        .subgroup-body, .subgroup.open .subgroup-body, .subgroup-toggle .indicator { transition: none; }
       }
       .row {
         display: flex; align-items: center; gap: 14px;
@@ -391,6 +410,23 @@ var BIBLE = [
 ];
 
       var SECTION_ORDER = ["福音", "保祿書信", "公函", "若望默示錄"];
+      /* 福音 split into four book subgroups, newest first:
+         瑪竇 (2024-07) → 若望 (2024-05) → 馬爾谷 (2024-02) → 路加・宗徒 (2023-12).
+         路加福音 and 宗徒大事錄 share one subgroup (same author, two volumes). */
+      var GOSPEL_SUBGROUPS = [
+        { name: "瑪竇福音", prefixes: ["瑪"] },
+        { name: "若望福音", prefixes: ["若"] },
+        { name: "馬爾谷福音", prefixes: ["谷"] },
+        { name: "路加福音・宗徒大事錄", prefixes: ["路", "宗"] }
+      ];
+      function gospelSubgroupOf(content) {
+        for (var k = 0; k < GOSPEL_SUBGROUPS.length; k++) {
+          for (var j = 0; j < GOSPEL_SUBGROUPS[k].prefixes.length; j++) {
+            if (content.indexOf(GOSPEL_SUBGROUPS[k].prefixes[j]) === 0) return GOSPEL_SUBGROUPS[k].name;
+          }
+        }
+        return null;
+      }
       var audio = document.getElementById("audio");
       var nowPlaying = document.getElementById("nowPlaying");
       var seek = document.getElementById("seek");
@@ -442,6 +478,7 @@ var BIBLE = [
       var listEl = document.getElementById("list");
       var rowEls = []; /* per BIBLE index */
       var groupSections = [];
+      var subgroupEls = [];
 
       function setOpen(sectionEl, open) {
         sectionEl.classList.toggle("open", open);
@@ -450,8 +487,17 @@ var BIBLE = [
         btn.querySelector(".indicator").textContent = open ? "▾" : "▸";
         btn.querySelector(".ghint").textContent = open ? "點標題收起本組" : "點標題展開本組";
       }
+      function setSubOpen(subEl, open) {
+        subEl.classList.toggle("open", open);
+        var btn = subEl.querySelector(".subgroup-toggle");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        btn.querySelector(".indicator").textContent = open ? "▾" : "▸";
+        btn.querySelector(".shint").textContent = open ? "點標題收起" : "點標題展開";
+      }
       function updateToggleAllLabel() {
         var allOpen = groupSections.length > 0 && groupSections.every(function (s) {
+          return s.classList.contains("open");
+        }) && subgroupEls.every(function (s) {
           return s.classList.contains("open");
         });
         document.getElementById("toggleAll").textContent = allOpen ? "全部收起" : "全部展開";
@@ -515,8 +561,7 @@ var BIBLE = [
           bodyInner.appendChild(d);
         }
 
-        items.forEach(function (bi, pos) {
-          noticesHere.forEach(function (n) { if (n.after_index === pos) addNotice(n); });
+        function createRow(bi) {
           var entry = BIBLE[bi];
           var p = entry.date.split("-");
           var row = document.createElement("button");
@@ -545,24 +590,95 @@ var BIBLE = [
 
           row.appendChild(meta); row.appendChild(body); row.appendChild(play);
           row.addEventListener("click", function () { toggleEntry(bi); });
-          bodyInner.appendChild(row);
           rowEls[bi] = row;
-        });
-        noticesHere.forEach(function (n) { if (n.after_index >= items.length) addNotice(n); });
+          return row;
+        }
+
+        if (sec === "福音") {
+          /* split 福音 into the four book subgroups, newest first,
+             each collapsed by default; rows keep BIBLE order (newest → oldest) */
+          noticesHere.forEach(addNotice);
+          var subInners = {};
+          GOSPEL_SUBGROUPS.forEach(function (sg) {
+            var subItems = items.filter(function (bi) {
+              return gospelSubgroupOf(BIBLE[bi].content) === sg.name;
+            });
+            if (!subItems.length) return;
+
+            var subEl = document.createElement("div");
+            subEl.className = "subgroup";
+            subEl.setAttribute("data-subgroup", sg.name);
+
+            var h3 = document.createElement("h3");
+            var sToggle = document.createElement("button");
+            sToggle.type = "button";
+            sToggle.className = "subgroup-toggle";
+            sToggle.setAttribute("aria-expanded", "false");
+            var sname = document.createElement("span");
+            sname.className = "sname";
+            sname.textContent = sg.name;
+            var sc = document.createElement("span");
+            sc.className = "scount";
+            sc.textContent = subItems.length + " 講";
+            var shint = document.createElement("span");
+            shint.className = "shint";
+            shint.textContent = "點標題展開";
+            var sind = document.createElement("span");
+            sind.className = "indicator";
+            sind.setAttribute("aria-hidden", "true");
+            sind.textContent = "▸";
+            sToggle.appendChild(sname);
+            sToggle.appendChild(sc);
+            sToggle.appendChild(shint);
+            sToggle.appendChild(sind);
+            sToggle.addEventListener("click", function () {
+              setSubOpen(subEl, !subEl.classList.contains("open"));
+              updateToggleAllLabel();
+            });
+            h3.appendChild(sToggle);
+            subEl.appendChild(h3);
+
+            var sBodyWrap = document.createElement("div");
+            sBodyWrap.className = "subgroup-body";
+            var sBodyInner = document.createElement("div");
+            sBodyInner.className = "subgroup-body-inner";
+            sBodyWrap.appendChild(sBodyInner);
+            subEl.appendChild(sBodyWrap);
+
+            subInners[sg.name] = sBodyInner;
+            subgroupEls.push(subEl);
+            bodyInner.appendChild(subEl);
+          });
+
+          items.forEach(function (bi) {
+            var subName = gospelSubgroupOf(BIBLE[bi].content);
+            var target = subName && subInners[subName] ? subInners[subName] : bodyInner;
+            target.appendChild(createRow(bi));
+          });
+        } else {
+          items.forEach(function (bi, pos) {
+            noticesHere.forEach(function (n) { if (n.after_index === pos) addNotice(n); });
+            bodyInner.appendChild(createRow(bi));
+          });
+          noticesHere.forEach(function (n) { if (n.after_index >= items.length) addNotice(n); });
+        }
 
         groupSections.push(sectionEl);
         listEl.appendChild(sectionEl);
       });
 
-      /* ---------- default state: first group open, the rest collapsed ---------- */
-      if (groupSections.length > 0) setOpen(groupSections[0], true);
+      /* ---------- default state: all groups and subgroups collapsed ---------- */
       updateToggleAllLabel();
 
       /* ---------- expand / collapse all ---------- */
       document.getElementById("toggleAll").addEventListener("click", function () {
-        var anyClosed = groupSections.some(function (s) { return !s.classList.contains("open"); });
+        var anyClosed = groupSections.some(function (s) { return !s.classList.contains("open"); }) ||
+          subgroupEls.some(function (s) { return !s.classList.contains("open"); });
         groupSections.forEach(function (s) {
           if (s.style.display !== "none") setOpen(s, anyClosed);
+        });
+        subgroupEls.forEach(function (s) {
+          if (s.style.display !== "none") setSubOpen(s, anyClosed);
         });
         updateToggleAllLabel();
       });
@@ -660,14 +776,28 @@ var BIBLE = [
             var hit = !q || n.getAttribute("data-notice").toLowerCase().indexOf(q) >= 0;
             n.style.display = hit ? "" : "none";
           });
+          /* subgroups: while searching, show and expand only those with matches */
+          secEl.querySelectorAll(".subgroup").forEach(function (subEl) {
+            if (q) {
+              var subVisible = 0;
+              subEl.querySelectorAll(".row").forEach(function (row) {
+                if (row.style.display !== "none") subVisible++;
+              });
+              subEl.style.display = subVisible > 0 ? "" : "none";
+              if (subVisible > 0) setSubOpen(subEl, true);
+            } else {
+              subEl.style.display = "";
+              setSubOpen(subEl, false);
+            }
+          });
           if (q) {
             /* searching: auto-expand groups with matches, hide the rest */
             secEl.style.display = visible > 0 ? "" : "none";
             if (visible > 0) setOpen(secEl, true);
           } else {
-            /* cleared: back to default — first group open, the rest collapsed */
+            /* cleared: back to default — all groups and subgroups collapsed */
             secEl.style.display = "";
-            setOpen(secEl, secEl === groupSections[0]);
+            setOpen(secEl, false);
           }
           visibleTotal += visible;
         });
