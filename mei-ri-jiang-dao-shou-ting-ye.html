@@ -1,0 +1,1433 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>每日讲道收听页</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#f6efe0; --paper:#fdfaf2; --paper2:#fffdf7;
+  --ink:#2b2116; --ink2:#5a4a36; --muted:#7a6a55;
+  --deep:#1e1710; --deep2:#2a2117; --deep3:#3a2d1e;
+  --gold:#b9975b; --gold-light:#d6bc85; --gold-dark:#96793f;
+  --line:#e2d5b8; --line-dark:#4a3b27;
+  --red:#6b2d26;
+  --shadow:0 10px 30px rgba(43,33,22,.12);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ivory); color:var(--ink);
+  font-family:"Noto Serif SC","Songti SC","SimSun",serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+}
+a{color:inherit}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 110px}
+
+/* Header */
+.top{
+  background:var(--deep); color:#f3e9d2; text-align:center;
+  padding:28px 20px 26px; position:relative; overflow:hidden;
+}
+.top::after{content:"";position:absolute;left:20px;right:20px;bottom:10px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.cross{font-size:34px;line-height:1;color:var(--gold-light);display:block;margin-bottom:10px;font-family:serif}
+.top h1{margin:0;font-size:34px;letter-spacing:.14em;font-weight:900}
+.top p{margin:6px 0 0;font-size:14px;letter-spacing:.28em;color:#cbbd9a;font-family:"Noto Sans SC",sans-serif}
+.top .latin{margin-top:10px;font-size:12px;letter-spacing:.12em;color:#9a8a68;font-style:italic}
+
+/* Today */
+.datebar{display:flex;align-items:center;justify-content:space-between;padding:18px 2px 12px;gap:12px}
+.datebar .today-label{font-family:"Noto Sans SC",sans-serif;font-size:13px;letter-spacing:.18em;color:var(--gold-dark);font-weight:700}
+.datebar .today-date{font-size:15px;color:var(--ink2)}
+.hero{
+  background:linear-gradient(180deg,var(--deep2),var(--deep));
+  color:#f7efdb;border:1px solid var(--line-dark);border-radius:20px;
+  padding:22px 20px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.hero::before{content:"✝";position:absolute;right:14px;top:6px;font-size:92px;color:rgba(185,151,91,.10);line-height:1}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#1e1710;font-family:"Noto Sans SC",sans-serif;font-weight:800;font-size:13px;letter-spacing:.08em;padding:6px 12px;border-radius:999px}
+.hero h2{margin:16px 0 4px;font-size:28px;line-height:1.3;font-weight:900;letter-spacing:.02em}
+.hero .feast{font-size:18px;color:var(--gold-light);line-height:1.5}
+.hero .gospel{margin-top:14px;padding-top:14px;border-top:1px solid rgba(214,188,133,.28);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hero .gospel b{font-size:19px}
+.hero .gospel span{font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#cbbd9a}
+.verse{margin:16px 0 0;font-size:16.5px;line-height:1.85;color:#e9ddc2}
+.verse small{display:block;margin-top:8px;font-size:13px;color:#a99774;font-family:"Noto Sans SC",sans-serif}
+
+/* Player */
+.player{margin-top:20px;background:rgba(255,255,255,.06);border:1px solid rgba(214,188,133,.25);border-radius:16px;padding:16px}
+.play-row{display:flex;align-items:center;gap:16px}
+.big-play{
+  width:76px;height:76px;flex:0 0 76px;border-radius:50%;border:2px solid var(--gold-light);
+  background:var(--gold);color:#1e1710;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);-webkit-tap-highlight-color:transparent;
+}
+.big-play:active{transform:scale(.97)}
+.big-play svg{width:32px;height:32px;margin-left:3px}
+.big-play .icon-pause{margin-left:0;display:none}
+.is-playing .icon-play{display:none}
+.is-playing .icon-pause{display:block}
+.play-meta{flex:1;min-width:0}
+.play-meta strong{display:block;font-size:17px;line-height:1.4;white-space:normal;word-break:break-word}
+.play-meta span{font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#c9b98f}
+.time{font-variant-numeric:tabular-nums;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#e6d9b8;margin-top:10px;display:flex;justify-content:space-between}
+input[type=range]{width:100%;height:28px;accent-color:var(--gold);cursor:pointer;margin:2px 0 0}
+.controls{display:flex;gap:10px;margin-top:10px}
+.ctrl{
+  flex:1;min-height:48px;border-radius:999px;border:1px solid rgba(214,188,133,.35);
+  background:transparent;color:#f0e3c2;font-family:"Noto Sans SC",sans-serif;font-size:14px;font-weight:700;cursor:pointer;padding:10px 6px;
+}
+.ctrl:active{background:rgba(185,151,91,.2)}
+.status{font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#bfae87;margin-top:10px;min-height:20px}
+
+/* Sections */
+.section-head{margin:28px 2px 12px;display:flex;align-items:end;justify-content:space-between;gap:12px}
+.section-head h3{margin:0;font-size:22px;letter-spacing:.04em}
+.section-head p{margin:0;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:var(--muted)}
+.rule{height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:999px;margin:0 2px 14px;opacity:.9}
+.rule::after{content:"";display:block;height:1px;background:var(--gold);margin-top:1px;opacity:.5}
+
+.list{display:flex;flex-direction:column;gap:12px}
+.item{
+  background:var(--paper2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 14px 16px 16px;display:flex;gap:14px;align-items:center;box-shadow:0 2px 10px rgba(43,33,22,.04);
+}
+.item.active{border-color:var(--gold);background:#fff8e6;box-shadow:0 6px 18px rgba(150,121,63,.14)}
+.datebox{flex:0 0 58px;text-align:center;border-right:1px solid var(--line);padding-right:12px}
+.datebox b{display:block;font-size:24px;line-height:1;color:var(--ink)}
+.datebox span{font-family:"Noto Sans SC",sans-serif;font-size:12px;color:var(--muted)}
+.item-main{flex:1;min-width:0}
+.item-main h4{margin:0;font-size:17.5px;line-height:1.45;font-weight:700}
+.item-main p{margin:4px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5}
+.item-main .meta{font-family:"Noto Sans SC",sans-serif;font-size:12.5px;color:var(--muted);margin-top:5px}
+.mini-play{
+  width:58px;height:58px;flex:0 0 58px;border-radius:50%;border:1.5px solid var(--gold);
+  background:var(--deep);color:var(--gold-light);display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.mini-play svg{width:22px;height:22px;margin-left:2px}
+.item.active .mini-play{background:var(--gold);color:#1e1710}
+
+.sunday{border-left:4px solid var(--gold)}
+.solemn{border-left:4px solid var(--red)}
+
+/* Same liturgical day (同一礼仪日) */
+.past-item{cursor:pointer}
+.past-item .datebox b{font-size:20px;letter-spacing:.02em}
+.past-item .datebox span{white-space:nowrap}
+.lit-group{font-size:17px;font-weight:900;letter-spacing:.03em;color:var(--ink);margin:0 2px 10px}
+.lit-group:not(:first-of-type){margin-top:22px}
+
+/* Guide entry card */
+.guide-card{display:flex;align-items:center;gap:14px;background:var(--paper2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;margin-top:20px;text-decoration:none;box-shadow:0 2px 10px rgba(43,33,22,.04);-webkit-tap-highlight-color:transparent}
+.guide-card:active{border-color:var(--gold);background:#fff8e6}
+.guide-main{flex:1;min-width:0}
+.guide-main h3{margin:0;font-size:20px;letter-spacing:.04em;font-weight:900}
+.guide-main p{margin:4px 0 0;font-family:"Noto Sans SC",sans-serif;font-size:13.5px;color:var(--muted);line-height:1.6}
+.guide-arrow{flex:0 0 44px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--gold);background:var(--deep);color:var(--gold-light);display:grid;place-items:center;font-size:19px}
+
+
+/* Board nav */
+.board-nav{display:flex;gap:10px;padding:20px 0 2px}
+.board-nav a{flex:1;min-height:52px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--gold);border-radius:999px;background:var(--paper2);font-family:"Noto Sans SC",sans-serif;font-size:15.5px;font-weight:700;color:var(--ink);text-decoration:none;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 10px rgba(43,33,22,.04)}
+.board-nav a:active{background:#fff8e6}
+.board-nav a.nav-daily{background:var(--deep);color:var(--gold-light);border-color:var(--deep)}
+
+/* Boards */
+.board{scroll-margin-top:14px}
+.board-head{margin:26px 2px 0}
+.board-rule{height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:999px;margin:0 0 14px}
+.board-rule::after{content:"";display:block;height:1px;background:var(--gold);margin-top:1px;opacity:.5}
+.board-head h2{margin:0;font-size:30px;font-weight:900;letter-spacing:.06em;line-height:1.25}
+.board-head p{margin:6px 0 0;font-family:"Noto Sans SC",sans-serif;font-size:14px;color:var(--muted);line-height:1.6}
+
+/* Collapsible full-year list */
+.year-toggle{cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:center}
+.year-arrow{flex:0 0 auto;font-size:20px;line-height:1;color:var(--gold-dark);padding:6px 2px;transition:transform .25s ease}
+.year-toggle.open .year-arrow{transform:rotate(90deg)}
+#yearBody[hidden]{display:none}
+
+/* Guide boards（旧约／新约导读：板块自有播放器＋搜索＋折叠分组） */
+.gplayer{position:sticky;top:0;z-index:15;background:var(--deep);color:#f3e9d2;border-radius:0 0 14px 14px;box-shadow:var(--shadow);padding:14px 16px 12px;margin:14px -16px 0}
+@media(min-width:560px){.gplayer{margin-left:-20px;margin-right:-20px}}
+@media(min-width:712px){.gplayer{margin-left:0;margin-right:0;border-radius:14px}}
+.gnow{font-size:17px;font-weight:700;min-height:27px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gnow .gdate{color:var(--gold-light);font-weight:600;margin-right:8px}
+.gnow.idle{color:#cdbd93;font-weight:400}
+.gprogress{display:flex;align-items:center;gap:10px;margin-top:8px}
+.gprogress .gtime{font-family:"Noto Sans SC",sans-serif;font-size:13px;color:#cdbd93;min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
+input[type=range].gseek{flex:1;-webkit-appearance:none;appearance:none;height:30px;background:transparent;cursor:pointer;margin:0}
+input[type=range].gseek::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(to right,var(--gold-light) var(--fill,0%),#57451d var(--fill,0%))}
+input[type=range].gseek::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--gold-light);margin-top:-7px;border:2px solid #f7ecd2}
+input[type=range].gseek::-moz-range-track{height:6px;border-radius:3px;background:#57451d}
+input[type=range].gseek::-moz-range-progress{height:6px;border-radius:3px;background:var(--gold-light)}
+input[type=range].gseek::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold-light);border:2px solid #f7ecd2}
+.gcontrols{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:4px}
+.gcontrols button{font-family:"Noto Sans SC",sans-serif;cursor:pointer;color:#f3e9d2;background:rgba(243,231,200,.10);border:1px solid rgba(243,231,200,.25);border-radius:999px;min-width:58px;height:48px;padding:0 14px;font-size:15px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.gcontrols button:active{background:rgba(243,231,200,.22)}
+.gcontrols button.gmain{width:64px;height:64px;min-width:64px;padding:0;background:var(--gold);border-color:var(--gold);color:#fff8e7}
+.gcontrols button.gmain svg{width:26px;height:26px;fill:currentColor}
+.gcontrols button.gspeed{min-width:66px;font-variant-numeric:tabular-nums}
+.gsearch{margin:22px 0 6px}
+.gsearch input{width:100%;font-family:inherit;font-size:17px;padding:14px 16px;min-height:54px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper2);color:var(--ink)}
+.gsearch input::placeholder{color:var(--muted)}
+.gsearch input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.gresult{font-family:"Noto Sans SC",sans-serif;font-size:14px;color:var(--muted);min-height:22px;margin:2px 2px 0}
+.gtools{display:flex;justify-content:flex-end;margin:14px 0 0}
+.gtoggle-all{font-family:"Noto Sans SC",sans-serif;cursor:pointer;font-size:15.5px;font-weight:700;color:var(--gold-dark);background:var(--paper2);border:1.5px solid var(--line);border-radius:999px;padding:10px 20px;min-height:46px;box-shadow:0 2px 10px rgba(43,33,22,.04);-webkit-tap-highlight-color:transparent}
+.gtoggle-all:active{background:#fff8e6}
+.ggroup{margin-top:22px}
+.ggroup h2{margin:0}
+.gtoggle{width:100%;min-height:62px;display:flex;align-items:center;gap:10px;font-family:inherit;color:var(--ink);text-align:left;background:none;border:none;cursor:pointer;padding:12px 6px 10px;margin:0;-webkit-tap-highlight-color:transparent}
+.gtoggle:active{opacity:.65}
+.gtoggle .gname{font-size:25px;font-weight:900;line-height:1.3}
+.gtoggle .gcount{font-family:"Noto Sans SC",sans-serif;font-size:15px;color:var(--gold-dark);font-weight:700;white-space:nowrap}
+.gtoggle .ghint{margin-left:auto;font-family:"Noto Sans SC",sans-serif;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.gtoggle .gindicator{flex:0 0 auto;font-size:19px;line-height:1;color:var(--gold-dark)}
+.ggrule{height:2px;background:var(--gold);opacity:.55;margin-bottom:12px}
+.gbody{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .38s ease,visibility 0s linear .38s}
+.ggroup.open > .gbody,.gsubgroup.open > .gbody{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows .38s ease,visibility 0s}
+.gsubgroup{margin:2px 0 18px}
+.gsubgroup h3{margin:0}
+.gsubgroup .gtoggle{min-height:52px;padding:8px 6px 6px}
+.gsubgroup .gname{font-size:20.5px}
+.gsubgroup .ggrule{height:1px;opacity:.35;margin-bottom:10px}
+.gbody-inner{overflow:hidden;min-height:0}
+.grow{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font-family:inherit;background:var(--paper2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;box-shadow:0 2px 10px rgba(43,33,22,.04);min-height:76px;-webkit-tap-highlight-color:transparent}
+.grow .gmeta{flex:0 0 auto;text-align:center;min-width:74px}
+.grow .gmeta .gy{display:block;font-size:21px;font-weight:900;line-height:1.15}
+.grow .gmeta .gmd{display:block;font-size:14px;color:var(--muted)}
+.grow .grow-main{flex:1 1 auto;min-width:0;border-left:1px solid var(--line);padding-left:14px}
+.grow .gcontent{display:block;font-size:19px;font-weight:700;line-height:1.45}
+.grow .gsize{display:block;font-family:"Noto Sans SC",sans-serif;font-size:13.5px;color:var(--muted);margin-top:2px}
+.grow .gplay{flex:0 0 auto;width:54px;height:54px;border-radius:50%;background:var(--deep);color:var(--gold-light);display:inline-flex;align-items:center;justify-content:center;pointer-events:none}
+.grow .gplay svg{width:21px;height:21px;fill:currentColor}
+.grow.playing{border-color:var(--gold);background:#fff8e6}
+.grow.playing .gplay{background:var(--gold);color:#1e1710}
+.gnotice{background:#efe6cf;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:16.5px;color:var(--ink2);text-align:center}
+.gempty{text-align:center;color:var(--muted);font-size:17px;padding:34px 0 8px;display:none}
+@media(prefers-reduced-motion:reduce){.gbody,.ggroup.open > .gbody,.gsubgroup.open > .gbody{transition:none}}
+
+/* Full-year filters */
+.filters{background:var(--paper2);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(43,33,22,.04)}
+.filters-label{font-family:"Noto Sans SC",sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--gold-dark);margin:0 0 10px}
+.month-bar{display:flex;flex-wrap:wrap;gap:8px}
+.month-btn{min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);font-family:"Noto Sans SC",sans-serif;font-size:14px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.month-btn.active{background:var(--deep);color:var(--gold-light);border-color:var(--deep)}
+.date-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:end}
+.date-field{flex:1;min-width:170px}
+.date-field label{display:block;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:var(--muted);margin-bottom:6px}
+.date-field input{width:100%;height:48px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font-family:"Noto Sans SC",sans-serif;font-size:16px;padding:0 12px}
+.clear-btn{height:48px;padding:0 18px;border-radius:999px;border:1px solid var(--gold);background:transparent;color:var(--gold-dark);font-family:"Noto Sans SC",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.count-line{font-family:"Noto Sans SC",sans-serif;font-size:13.5px;color:var(--muted);margin:0 2px 12px}
+.count-line b{color:var(--ink)}
+.text-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-family:"Noto Sans SC",sans-serif;font-size:14px;font-weight:700;color:var(--gold-light);text-underline-offset:3px}
+.hero .text-link{color:var(--gold-light)}
+.item-main .text-link{color:var(--gold-dark);margin-top:6px;font-size:13px}
+.extra-badge{display:inline-block;background:var(--red);color:#fff;font-family:"Noto Sans SC",sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;padding:2px 8px;border-radius:999px;vertical-align:2px;margin-left:6px}
+.empty-state{display:none;background:var(--paper);border:1px dashed var(--line);border-radius:var(--radius);padding:28px 18px;text-align:center}
+.empty-state.show{display:block}
+.empty-state p{margin:0;font-size:16px;color:var(--ink2);line-height:1.7}
+.empty-state small{display:block;margin-top:6px;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:var(--muted)}
+
+/* Gospel card */
+.reading{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.reading h4{margin:0 0 8px;font-size:19px}
+.reading p{margin:0;font-size:16.5px;line-height:1.9;color:#3d2f1e}
+.reading .ref{margin-top:12px;font-family:"Noto Sans SC",sans-serif;font-size:13px;color:var(--muted)}
+
+/* Footer / source */
+.source{margin-top:22px;background:#efe6cf;border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.source p{margin:0;font-family:"Noto Sans SC",sans-serif;font-size:14px;line-height:1.7;color:var(--ink2)}
+.source a{color:var(--gold-dark);font-weight:700;text-underline-offset:3px}
+.footer{text-align:center;padding:28px 10px 6px;color:var(--muted)}
+.footer .cross{font-size:22px;margin-bottom:6px;color:var(--gold-dark)}
+.footer p{margin:0;font-size:13px;font-family:"Noto Sans SC",sans-serif;line-height:1.7}
+
+/* Sticky mini bar */
+.sticky{
+  position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:20;
+  max-width:656px;margin:0 auto;background:rgba(30,23,16,.97);color:#f3e9d2;border:1px solid var(--line-dark);
+  border-radius:16px;padding:10px 12px;display:none;align-items:center;gap:12px;box-shadow:0 12px 30px rgba(0,0,0,.28);backdrop-filter:blur(8px);
+}
+.sticky.show{display:flex}
+.sticky button{width:52px;height:52px;flex:0 0 52px;border-radius:50%;border:none;background:var(--gold);color:#1e1710;display:grid;place-items:center;cursor:pointer}
+.sticky button svg{width:20px;height:20px}
+.sticky div{flex:1;min-width:0}
+.sticky strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sticky span{font-family:"Noto Sans SC",sans-serif;font-size:12px;color:#c9b98f}
+
+@media(min-width:560px){
+  .top h1{font-size:34px}.hero h2{font-size:32px}.wrap{padding-left:20px;padding-right:20px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="cross">✝</span>
+  <h1>林思川每日讲道</h1>
+  <p>DAILY HOMILY · 每日弥撒讲道收听</p>
+  <div class="latin">Verbum Domini manet in aeternum</div>
+</header>
+
+<main class="wrap">
+
+  <nav class="board-nav" aria-label="板块导航">
+    <a class="nav-daily" href="#daily">每日讲道</a>
+    <a href="#ot-guide">旧约导读</a>
+    <a href="#nt-guide">新约导读</a>
+  </nav>
+
+  <!-- 板块一 · 每日讲道 -->
+  <section class="board" id="daily">
+  <div class="board-head">
+    <div class="board-rule"></div>
+    <h2>每日讲道</h2>
+    <p>每日弥撒讲道收听：今日讲道、同一礼仪日与 2026 全年讲道。</p>
+  </div>
+
+  <div class="datebar">
+    <span class="today-label">✦ 今日讲道</span>
+    <span class="today-date" id="todayText">2026年11月8日 · 星期日</span>
+  </div>
+
+  <!-- TODAY -->
+  <section class="hero" aria-label="今日讲道">
+    <span class="hero-tag">今日 · 点按即可收听</span>
+    <h2>11月8日 星期日</h2>
+    <div class="feast">常年期第三十二主日</div>
+
+    <div class="gospel">
+      <b>福音：玛窦福音 25:1-13</b>
+      <span>MP3 约 3.1M</span>
+    </div>
+
+    <p class="verse">今日福音：玛窦福音 25:1-13</p>
+
+    <div class="player" id="playerBox">
+      <div class="play-row">
+        <button class="big-play" id="bigPlay" aria-label="播放今日讲道">
+          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <div class="play-meta">
+          <strong id="nowTitle">11月8日 · 星期日讲道</strong>
+          <span id="nowSub">玛窦福音 25:1-13</span>
+          <div class="time"><span id="cur">0:00</span><span id="dur">--:--</span></div>
+        </div>
+      </div>
+      <input type="range" id="seek" value="0" min="0" max="100" step="0.1" aria-label="播放进度">
+      <div class="controls">
+        <button class="ctrl" id="back15">◀◀ 后退 15秒</button>
+        <button class="ctrl" id="fwd15">前进 15秒 ▶▶</button>
+        <button class="ctrl" id="speedBtn">倍速 1.0×</button>
+      </div>
+      <div class="status" id="status">点上方金色大按钮开始收听，可锁屏继续播放。</div>
+      <a class="text-link" id="textLink" href="https://ccreadbible.info/homily-2026/homily-20261108.html" target="_blank" rel="noopener">查看这篇讲道的文字页 ↗</a>
+    </div>
+  </section>
+
+  <!-- LITURGICAL-START -->
+  <div class="section-head">
+    <h3>同一礼仪日</h3><p>同一天主教礼仪日 · 不同年份的讲道</p>
+  </div>
+  <div class="rule"></div>
+
+  <div class="lit-group">常年期第三十二主日 · 甲年</div>
+  <div class="list">
+    <article class="item past-item" data-src="https://www.ccreadbible.net/bona/2023homily/20231112.mp3">
+      <div class="datebox"><b>2023</b><span>11月12日</span></div>
+      <div class="item-main">
+        <h4>常年期第三十二主日</h4>
+        <p>福音：瑪二五1-13</p>
+        <div class="meta">2023年11月12日 · MP3 约 2.7M · 思高读经推广中心</div>
+      </div>
+      <button class="mini-play" aria-label="播放2023年11月12日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+    <article class="item past-item" data-src="https://www.ccreadbible.net/bona/2020homily/20201108.mp3">
+      <div class="datebox"><b>2020</b><span>11月8日</span></div>
+      <div class="item-main">
+        <h4>常年期第三十二主日</h4>
+        <p>福音：瑪二五1-13</p>
+        <div class="meta">2020年11月8日 · MP3 约 2.7M · 思高读经推广中心</div>
+      </div>
+      <button class="mini-play" aria-label="播放2020年11月8日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+    <article class="item past-item" data-src="https://www.ccreadbible.net/bona/2017homily/20171112.mp3">
+      <div class="datebox"><b>2017</b><span>11月12日</span></div>
+      <div class="item-main">
+        <h4>常年期第三十二主日</h4>
+        <p>福音：瑪二五1-13</p>
+        <div class="meta">2017年11月12日 · MP3 约 2.5M · 思高读经推广中心</div>
+      </div>
+      <button class="mini-play" aria-label="播放2017年11月12日讲道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    </article>
+  </div>
+  <!-- LITURGICAL-END -->
+
+  <!-- RECENT -->
+  <div class="section-head year-toggle" id="yearToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="yearBody" aria-label="展开或收起 2026 全年讲道列表">
+    <h3>2026 全年讲道</h3><p>共 264 条 · 点右侧按钮播放</p><span class="year-arrow" aria-hidden="true">▸</span>
+  </div>
+  <div id="yearBody" hidden>
+  <div class="rule"></div>
+
+  <div class="filters" aria-label="筛选讲道">
+    <p class="filters-label">按月筛选</p>
+    <div class="month-bar" id="monthBar">
+      <button class="month-btn active" data-month="all">全部</button>
+      <button class="month-btn" data-month="1">1月</button>
+      <button class="month-btn" data-month="2">2月</button>
+      <button class="month-btn" data-month="3">3月</button>
+      <button class="month-btn" data-month="4">4月</button>
+      <button class="month-btn" data-month="5">5月</button>
+      <button class="month-btn" data-month="6">6月</button>
+      <button class="month-btn" data-month="7">7月</button>
+      <button class="month-btn" data-month="8">8月</button>
+      <button class="month-btn" data-month="9">9月</button>
+      <button class="month-btn" data-month="10">10月</button>
+      <button class="month-btn" data-month="11">11月</button>
+    </div>
+    <div class="date-row">
+      <div class="date-field">
+        <label for="datePick">按日期查找（2026年1月1日 — 11月8日）</label>
+        <input type="date" id="datePick" min="2026-01-01" max="2026-11-08" value="">
+      </div>
+      <button class="clear-btn" id="clearFilter" type="button">显示全部</button>
+    </div>
+  </div>
+  <p class="count-line" id="countLine"></p>
+
+  <div class="list" id="list"></div>
+  <div class="empty-state" id="emptyState">
+    <p id="emptyText">这一天原站没有讲道。</p>
+    <small>2026年共有58天原站未发布讲道，本页只列原站有的日子，不补编。</small>
+  </div>
+  </div>
+
+  <div class="section-head"><h3>今日福音默想</h3><p>路加福音</p></div>
+  <div class="rule"></div>
+  <section class="reading">
+    <h4>路加福音 16:9-15</h4>
+    <p>耶稣提醒门徒，要以世上的钱财结交朋友，更要在小事上忠信。人在小事上忠信，在大事上也忠信；天主洞悉人心，世人视为尊贵的，在天主面前可能是可憎恶的。</p>
+    <p style="margin-top:12px">收听时不妨默想：我如何使用时间与金钱？我事奉的是天主，还是钱财？</p>
+    <div class="ref">经文意译提要 · 完整经文请参阅思高版圣经当日读经</div>
+  </section>
+  </section>
+
+  <!-- 板块二 · 旧约导读 -->
+  <section class="board" id="ot-guide">
+    <div class="board-head">
+      <div class="board-rule"></div>
+      <h2>旧约导读</h2>
+      <p>《聖經導讀》舊約 · 2022–2023年 南港耶穌聖心堂 林思川神父平日彌撒後導讀<br>共 217 講 · 5 組 · 最新：2023-10-30 瑪拉基亞</p>
+    </div>
+
+    <div class="gplayer" id="otPlayer">
+      <div class="gnow idle" id="otNow">點選任一講，即可開始收聽</div>
+      <div class="gprogress">
+        <span class="gtime" id="otTimeCur">0:00</span>
+        <input type="range" class="gseek" id="otSeek" min="0" max="100" step="0.1" value="0" aria-label="播放進度">
+        <span class="gtime" id="otTimeDur">0:00</span>
+      </div>
+      <div class="gcontrols">
+        <button type="button" id="otBack" aria-label="後退15秒">−15秒</button>
+        <button type="button" class="gmain" id="otPlay" aria-label="播放或暫停">
+          <svg id="otIcoPlay" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+          <svg id="otIcoPause" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+        </button>
+        <button type="button" id="otFwd" aria-label="前進15秒">+15秒</button>
+        <button type="button" class="gspeed" id="otSpeed" aria-label="播放速度">1.0×</button>
+      </div>
+    </div>
+
+    <div class="gsearch">
+      <input type="search" id="otSearch" placeholder="搜尋導讀內容或日期，如：創世紀、2023-10-30" aria-label="搜尋舊約導讀">
+      <p class="gresult" id="otResult"></p>
+    </div>
+    <div class="gtools">
+      <button type="button" class="gtoggle-all" id="otToggleAll">全部展開</button>
+    </div>
+    <div id="otList"></div>
+    <p class="gempty" id="otEmpty">沒有符合的導讀，請換個關鍵字試試。</p>
+    <audio id="otAudio" preload="metadata"></audio>
+  </section>
+
+  <!-- 板块三 · 新约导读 -->
+  <section class="board" id="nt-guide">
+    <div class="board-head">
+      <div class="board-rule"></div>
+      <h2>新约导读</h2>
+      <p>《聖經導讀》新約 · 2023–2024年 南港耶穌聖心堂 林思川神父平日彌撒後導讀<br>共 111 講 · 4 組 · 最新：2024-07-04 瑪二八</p>
+    </div>
+
+    <div class="gplayer" id="ntPlayer">
+      <div class="gnow idle" id="ntNow">點選任一講，即可開始收聽</div>
+      <div class="gprogress">
+        <span class="gtime" id="ntTimeCur">0:00</span>
+        <input type="range" class="gseek" id="ntSeek" min="0" max="100" step="0.1" value="0" aria-label="播放進度">
+        <span class="gtime" id="ntTimeDur">0:00</span>
+      </div>
+      <div class="gcontrols">
+        <button type="button" id="ntBack" aria-label="後退15秒">−15秒</button>
+        <button type="button" class="gmain" id="ntPlay" aria-label="播放或暫停">
+          <svg id="ntIcoPlay" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+          <svg id="ntIcoPause" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+        </button>
+        <button type="button" id="ntFwd" aria-label="前進15秒">+15秒</button>
+        <button type="button" class="gspeed" id="ntSpeed" aria-label="播放速度">1.0×</button>
+      </div>
+    </div>
+
+    <div class="gsearch">
+      <input type="search" id="ntSearch" placeholder="搜尋導讀內容或日期，如：若望、2024-07-04" aria-label="搜尋新約導讀">
+      <p class="gresult" id="ntResult"></p>
+    </div>
+    <div class="gtools">
+      <button type="button" class="gtoggle-all" id="ntToggleAll">全部展開</button>
+    </div>
+    <div id="ntList"></div>
+    <p class="gempty" id="ntEmpty">沒有符合的導讀，請換個關鍵字試試。</p>
+    <audio id="ntAudio" preload="metadata"></audio>
+  </section>
+
+  <div class="source">
+    <p><strong>音频来源：</strong>方济会思高读经推广中心每日弥撒讲道。本页为手机收听整理页，方便在手机上直接点播。<br>
+    本页收录2026年1月1日至11月8日共264条，音频均直链原站MP3，未下载、未转存；每条下方有原站文字页链接。<br>
+    原站列表：<a href="https://ccreadbible.info/homily/homily-2026-1112.html" target="_blank" rel="noopener">2026年11–12月弥撒讲道</a> · <a href="https://ccreadbible.info/homily/homily-2026-0910.html" target="_blank" rel="noopener">9–10月讲道</a><br>
+    若某日音频加载较慢，请稍等片刻或切换网络后重试。</p>
+  </div>
+
+  <footer class="footer">
+    <span class="cross">✝</span>
+    <p>愿天主的话成为你日用的光。<br>Ad maiorem Dei gloriam · 愈显主荣</p>
+  </footer>
+</main>
+
+<!-- Sticky mini player -->
+<div class="sticky" id="sticky">
+  <button id="stickyPlay" aria-label="播放或暂停">
+    <svg id="stickyIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+  <div><strong id="stickyTitle">今日讲道</strong><span id="stickySub">点按继续收听</span></div>
+</div>
+
+<audio id="audio" preload="metadata" src="https://www.ccreadbible.net/bona/2026homily/20261108.mp3"></audio>
+
+<script>
+var ENTRIES = [{"date": "2026-11-08", "title": "常年期第三十二主日", "gospel": "瑪二五1-13", "text_url": "https://ccreadbible.info/homily-2026/homily-20261108.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261108.mp3"}, {"date": "2026-11-07", "title": "常年期 三十一週 星期六", "gospel": "路十六9-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20261107.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261107.mp3"}, {"date": "2026-11-06", "title": "常年期 三十一週 星期五", "gospel": "路十六1-8", "text_url": "https://ccreadbible.info/homily-2026/homily-20261106.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261106.mp3"}, {"date": "2026-11-06", "title": "11月特敬耶穌聖心－教會關於「煉靈月」的教導", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20261106-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261106-1.mp3", "extra": true}, {"date": "2026-11-05", "title": "常年期 三十一週 星期四", "gospel": "路十五1-10", "text_url": "https://ccreadbible.info/homily-2026/homily-20261105.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261105.mp3"}, {"date": "2026-11-04", "title": "常年期 三十一週 星期三", "gospel": "路十四25-33", "text_url": "https://ccreadbible.info/homily-2026/homily-20261104.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261104.mp3"}, {"date": "2026-11-03", "title": "常年期 三十一週 星期二", "gospel": "路十四15-24", "text_url": "https://ccreadbible.info/homily-2026/homily-20261103.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261103.mp3"}, {"date": "2026-11-02", "title": "11月2日 追思已亡", "gospel": "瑪二五31-46", "text_url": "https://ccreadbible.info/homily-2026/homily-20261102.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261102.mp3"}, {"date": "2026-11-01", "title": "11月1日 諸聖節", "gospel": "瑪五1-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20261101.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261101.mp3"}, {"date": "2026-10-30", "title": "常年期 第三十週 星期五", "gospel": "路十四1-6", "text_url": "https://ccreadbible.info/homily-2026/homily-20261030.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261030.mp3"}, {"date": "2026-10-29", "title": "常年期 第三十週 星期四", "gospel": "路十三31-35", "text_url": "https://ccreadbible.info/homily-2026/homily-20261029.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261029.mp3"}, {"date": "2026-10-28", "title": "10月28日 聖西滿及聖達德宗徒慶日", "gospel": "路六12-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20261028.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261028.mp3"}, {"date": "2026-10-27", "title": "常年期 第三十週 星期二", "gospel": "路十三18-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20261027.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261027.mp3"}, {"date": "2026-10-26", "title": "常年期 第三十週 星期一", "gospel": "路十三10-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20261026.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261026.mp3"}, {"date": "2026-10-25", "title": "常年期第三十主日", "gospel": "瑪二二34-40", "text_url": "https://ccreadbible.info/homily-2026/homily-20261025.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261025.mp3"}, {"date": "2026-10-24", "title": "常年期 第二十九週 星期六", "gospel": "路十三1-9", "text_url": "https://ccreadbible.info/homily-2026/homily-20261024.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261024.mp3"}, {"date": "2026-10-23", "title": "常年期 第二十九週 星期五", "gospel": "路十二54-59", "text_url": "https://ccreadbible.info/homily-2026/homily-20261023.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261023.mp3"}, {"date": "2026-10-22", "title": "常年期 第二十九週 星期四", "gospel": "路十二49-53", "text_url": "https://ccreadbible.info/homily-2026/homily-20261022.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261022.mp3"}, {"date": "2026-10-21", "title": "常年期 第二十九週 星期三", "gospel": "路十二39-48", "text_url": "https://ccreadbible.info/homily-2026/homily-20261021.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261021.mp3"}, {"date": "2026-10-20", "title": "常年期 第二十九週 星期二", "gospel": "路十二35-38", "text_url": "https://ccreadbible.info/homily-2026/homily-20261020.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261020.mp3"}, {"date": "2026-10-19", "title": "常年期 第二十九週 星期一", "gospel": "路十二13-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20261019.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261019.mp3"}, {"date": "2026-10-18", "title": "常年期第二十九主日", "gospel": "瑪二二15-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20261018.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261018.mp3"}, {"date": "2026-10-17", "title": "10月17日 大溪聖方濟堂朝聖彌撒", "gospel": "瑪十一25-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20261017.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261017.mp3"}, {"date": "2026-10-16", "title": "常年期 第二十八週 星期五", "gospel": "路十二1-7", "text_url": "https://ccreadbible.info/homily-2026/homily-20261016.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261016.mp3"}, {"date": "2026-10-15", "title": "常年期 第二十八週 星期四", "gospel": "路十一47-54", "text_url": "https://ccreadbible.info/homily-2026/homily-20261015.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261015.mp3"}, {"date": "2026-10-14", "title": "常年期 第二十八週 星期三", "gospel": "路十一42-46", "text_url": "https://ccreadbible.info/homily-2026/homily-20261014.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261014.mp3"}, {"date": "2026-10-13", "title": "常年期 第二十八週 星期二", "gospel": "路十一37-41", "text_url": "https://ccreadbible.info/homily-2026/homily-20261013.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261013.mp3"}, {"date": "2026-10-12", "title": "常年期 第二十八週 星期一", "gospel": "路十一29-32", "text_url": "https://ccreadbible.info/homily-2026/homily-20261012.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261012.mp3"}, {"date": "2026-10-11", "title": "常年期第二十八主日", "gospel": "瑪二二1-14", "text_url": "https://ccreadbible.info/homily-2026/homily-20261011.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261011.mp3"}, {"date": "2026-10-10", "title": "常年期 第二十七週 星期六", "gospel": "路十一27-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20261010.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261010.mp3"}, {"date": "2026-10-09", "title": "常年期 第二十七週 星期五", "gospel": "路十一15-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20261009.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261009.mp3"}, {"date": "2026-10-08", "title": "常年期 第二十七週 星期四", "gospel": "路十一5-13", "text_url": "https://ccreadbible.info/homily-2026/homily-20261008.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261008.mp3"}, {"date": "2026-10-07", "title": "常年期 第二十七週 星期三", "gospel": "路十一1-4", "text_url": "https://ccreadbible.info/homily-2026/homily-20261007.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261007.mp3"}, {"date": "2026-10-06", "title": "常年期 第二十七週 星期二", "gospel": "路十38-42", "text_url": "https://ccreadbible.info/homily-2026/homily-20261006.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261006.mp3"}, {"date": "2026-10-05", "title": "常年期 第二十七週 星期一", "gospel": "路十25-37", "text_url": "https://ccreadbible.info/homily-2026/homily-20261005.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261005.mp3"}, {"date": "2026-10-04", "title": "常年期第二十七主日", "gospel": "瑪二一33-43", "text_url": "https://ccreadbible.info/homily-2026/homily-20261004.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261004.mp3"}, {"date": "2026-10-03", "title": "常年期 第二十六週 星期六", "gospel": "路十17-24", "text_url": "https://ccreadbible.info/homily-2026/homily-20261003.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261003.mp3"}, {"date": "2026-10-03", "title": "聖方濟九日敬禮-方濟升天禮讚", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20261003-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261003-1.mp3", "extra": true}, {"date": "2026-10-02", "title": "10月2日 護守天使紀念", "gospel": "瑪十八1-5, 10", "text_url": "https://ccreadbible.info/homily-2026/homily-20261002.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261002.mp3"}, {"date": "2026-10-02", "title": "聖方濟九日敬禮第七日", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20261002-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261002-1.mp3", "extra": true}, {"date": "2026-10-01", "title": "10月1日 聖德蘭貞女聖師慶日", "gospel": "瑪十八1-4", "text_url": "https://ccreadbible.info/homily-2026/homily-20261001.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261001.mp3"}, {"date": "2026-10-01", "title": "聖方濟九日敬禮第六日", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20261001-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20261001-1.mp3", "extra": true}, {"date": "2026-09-30", "title": "常年期 第二十六週 星期三", "gospel": "路九57-62", "text_url": "https://ccreadbible.info/homily-2026/homily-20260930.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260930.mp3"}, {"date": "2026-09-30", "title": "聖方濟九日敬禮第五日", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20260930-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260930-1.mp3", "extra": true}, {"date": "2026-09-29", "title": "9月29日 諸聖天使", "gospel": "若一47-51", "text_url": "https://ccreadbible.info/homily-2026/homily-20260929.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260929.mp3"}, {"date": "2026-09-29", "title": "聖方濟九日敬禮第四日", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20260929-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260929-1.mp3", "extra": true}, {"date": "2026-09-28", "title": "常年期 第二十六週 星期一", "gospel": "路九46-50", "text_url": "https://ccreadbible.info/homily-2026/homily-20260928.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260928.mp3"}, {"date": "2026-09-28", "title": "聖方濟九日敬禮第三日", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20260928-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260928-1.mp3", "extra": true}, {"date": "2026-09-27", "title": "常年期第二十六主日", "gospel": "瑪二一28-32", "text_url": "https://ccreadbible.info/homily-2026/homily-20260927.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260927.mp3"}, {"date": "2026-09-27", "title": "聖方濟九日敬禮第二日", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20260927-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260927-1.mp3", "extra": true}, {"date": "2026-09-26", "title": "常年期 第二十五週 星期六", "gospel": "路九43-45", "text_url": "https://ccreadbible.info/homily-2026/homily-20260926.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260926.mp3"}, {"date": "2026-09-26", "title": "聖方濟九日敬禮第一日", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20260926-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260926-1.mp3", "extra": true}, {"date": "2026-09-25", "title": "常年期 第二十五週 星期五", "gospel": "路九18-22", "text_url": "https://ccreadbible.info/homily-2026/homily-20260925.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260925.mp3"}, {"date": "2026-09-24", "title": "常年期 第二十五週 星期四", "gospel": "路九7-9", "text_url": "https://ccreadbible.info/homily-2026/homily-20260924.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260924.mp3"}, {"date": "2026-09-23", "title": "常年期 第二十五週 星期三", "gospel": "路九1-6", "text_url": "https://ccreadbible.info/homily-2026/homily-20260923.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260923.mp3"}, {"date": "2026-09-22", "title": "常年期 第二十五週 星期二", "gospel": "路八19-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20260922.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260922.mp3"}, {"date": "2026-09-21", "title": "9月21日 聖瑪竇宗徒慶日", "gospel": "瑪九9-13", "text_url": "https://ccreadbible.info/homily-2026/homily-20260921.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260921.mp3"}, {"date": "2026-09-20", "title": "常年期第二十五主日", "gospel": "瑪二十1-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20260920.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260920.mp3"}, {"date": "2026-09-19", "title": "常年期 第二十四週 星期六", "gospel": "路八4-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260919.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260919.mp3"}, {"date": "2026-09-18", "title": "常年期 第二十四週 星期五", "gospel": "路八1-3", "text_url": "https://ccreadbible.info/homily-2026/homily-20260918.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260918.mp3"}, {"date": "2026-09-17", "title": "9月17日 聖方濟印五傷", "gospel": "路九23-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260917.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260917.mp3"}, {"date": "2026-09-16", "title": "常年期 第二十四週 星期三", "gospel": "路七31-35", "text_url": "https://ccreadbible.info/homily-2026/homily-20260916.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260916.mp3"}, {"date": "2026-09-15", "title": "9月15日 痛苦聖母", "gospel": "若十九25-27", "text_url": "https://ccreadbible.info/homily-2026/homily-20260915.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260915.mp3"}, {"date": "2026-09-14", "title": "9月14日 光榮十字聖架慶日", "gospel": "若三13-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20260914.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260914.mp3"}, {"date": "2026-09-13", "title": "常年期第二十四主日", "gospel": "瑪十八21-35", "text_url": "https://ccreadbible.info/homily-2026/homily-20260913.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260913.mp3"}, {"date": "2026-09-10", "title": "常年期 第二十三週 星期四", "gospel": "路六27-38", "text_url": "https://ccreadbible.info/homily-2026/homily-20260910.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260910.mp3"}, {"date": "2026-09-08", "title": "9月8日 聖母誕辰慶日", "gospel": "瑪一18-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260908.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260908.mp3"}, {"date": "2026-09-07", "title": "常年期 第二十三週 星期一", "gospel": "路六6-11", "text_url": "https://ccreadbible.info/homily-2026/homily-20260907.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260907.mp3"}, {"date": "2026-09-06", "title": "常年期第二十三主日", "gospel": "瑪十八15-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260906.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260906.mp3"}, {"date": "2026-09-04", "title": "常年期 第二十二週 星期五", "gospel": "路五33-39", "text_url": "https://ccreadbible.info/homily-2026/homily-20260904.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260904.mp3"}, {"date": "2026-09-02", "title": "常年期 第二十二週 星期三", "gospel": "路四38-44", "text_url": "https://ccreadbible.info/homily-2026/homily-20260902.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260902.mp3"}, {"date": "2026-09-01", "title": "常年期 第二十二週 星期二", "gospel": "路四31-37", "text_url": "https://ccreadbible.info/homily-2026/homily-20260901.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260901.mp3"}, {"date": "2026-08-31", "title": "常年期 第二十二週 星期一", "gospel": "路四16-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260831.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260831.mp3"}, {"date": "2026-08-30", "title": "常年期第二十二主日", "gospel": "瑪十六21-27", "text_url": "https://ccreadbible.info/homily-2026/homily-20260830.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260830.mp3"}, {"date": "2026-08-29", "title": "8月29日 聖若翰蒙難", "gospel": "谷六17-29", "text_url": "https://ccreadbible.info/homily-2026/homily-20260829.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260829.mp3"}, {"date": "2026-08-28", "title": "常年期 第二十一週 星期五", "gospel": "瑪二五1-13", "text_url": "https://ccreadbible.info/homily-2026/homily-20260828.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260828.mp3"}, {"date": "2026-08-27", "title": "常年期 第二十一週 星期四", "gospel": "瑪二四42-51", "text_url": "https://ccreadbible.info/homily-2026/homily-20260827.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260827.mp3"}, {"date": "2026-08-26", "title": "常年期 第二十一週 星期三", "gospel": "瑪二三27-32", "text_url": "https://ccreadbible.info/homily-2026/homily-20260826.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260826.mp3"}, {"date": "2026-08-25", "title": "常年期 第二十一週 星期二", "gospel": "瑪二三23-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260825.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260825.mp3"}, {"date": "2026-08-24", "title": "8月24日 聖宗徒巴爾多祿茂", "gospel": "若一45-51", "text_url": "https://ccreadbible.info/homily-2026/homily-20260824.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260824.mp3"}, {"date": "2026-08-23", "title": "常年期第二十一主日", "gospel": "瑪十六13-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260823.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260823.mp3"}, {"date": "2026-08-22", "title": "8月22日 中華方濟會省主保中華聖母（聖母元后）", "gospel": "路一39-47", "text_url": "https://ccreadbible.info/homily-2026/homily-20260822.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260822.mp3"}, {"date": "2026-08-20", "title": "常年期 第二十週 星期四", "gospel": "瑪二二1-14", "text_url": "https://ccreadbible.info/homily-2026/homily-20260820.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260820.mp3"}, {"date": "2026-08-19", "title": "常年期 第二十週 星期三", "gospel": "瑪二十1-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20260819.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260819.mp3"}, {"date": "2026-08-18", "title": "常年期 第二十週 星期二", "gospel": "瑪十九23-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260818.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260818.mp3"}, {"date": "2026-08-17", "title": "常年期 第二十週 星期一", "gospel": "瑪十九16-22", "text_url": "https://ccreadbible.info/homily-2026/homily-20260817.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260817.mp3"}, {"date": "2026-08-16", "title": "常年期第二十主日", "gospel": "瑪十五21-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260816.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260816.mp3"}, {"date": "2026-08-14", "title": "常年期 第十九週 星期五", "gospel": "瑪十九3-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260814.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260814.mp3"}, {"date": "2026-08-13", "title": "常年期 第十九週 星期四", "gospel": "瑪十八21-十九1", "text_url": "https://ccreadbible.info/homily-2026/homily-20260813.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260813.mp3"}, {"date": "2026-08-12", "title": "常年期 第十九週 星期三", "gospel": "瑪十八15-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260812.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260812.mp3"}, {"date": "2026-08-10", "title": "8月10日 聖老楞左執事殉道", "gospel": "若十二24-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260810.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260810.mp3"}, {"date": "2026-08-09", "title": "常年期第十九主日", "gospel": "瑪十四22-33", "text_url": "https://ccreadbible.info/homily-2026/homily-20260809.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260809.mp3"}, {"date": "2026-08-08", "title": "8月8日 聖道明司鐸", "gospel": "瑪五13-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20260808.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260808.mp3"}, {"date": "2026-08-07", "title": "常年期 第十八週 星期五", "gospel": "瑪十六24-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260807.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260807.mp3"}, {"date": "2026-08-06", "title": "8月6日 耶穌顯聖容慶日", "gospel": "瑪十七1-9", "text_url": "https://ccreadbible.info/homily-2026/homily-20260806.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260806.mp3"}, {"date": "2026-08-05", "title": "常年期 第十八週 星期三", "gospel": "瑪十五21-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260805.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260805.mp3"}, {"date": "2026-08-04", "title": "常年期 第十八週 星期二", "gospel": "瑪十五1-2, 10-14", "text_url": "https://ccreadbible.info/homily-2026/homily-20260804.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260804.mp3"}, {"date": "2026-08-03", "title": "常年期 第十八週 星期一", "gospel": "瑪十四22-36", "text_url": "https://ccreadbible.info/homily-2026/homily-20260803.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260803.mp3"}, {"date": "2026-08-02", "title": "常年期第十八主日", "gospel": "瑪十四13-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20260802.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260802.mp3"}, {"date": "2026-08-01", "title": "常年期 第十七週 星期六", "gospel": "瑪十四1-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260801.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260801.mp3"}, {"date": "2026-07-31", "title": "常年期 第十七週 星期五", "gospel": "瑪十三54-58", "text_url": "https://ccreadbible.info/homily-2026/homily-20260731.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260731.mp3"}, {"date": "2026-07-30", "title": "常年期 第十七週 星期四", "gospel": "瑪十三47-53", "text_url": "https://ccreadbible.info/homily-2026/homily-20260730.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260730.mp3"}, {"date": "2026-07-29", "title": "7月29日 聖瑪爾大、瑪利亞、納匝祿紀念", "gospel": "若十一19-27", "text_url": "https://ccreadbible.info/homily-2026/homily-20260729.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260729.mp3"}, {"date": "2026-07-28", "title": "常年期 第十七週 星期二", "gospel": "瑪十三36-43", "text_url": "https://ccreadbible.info/homily-2026/homily-20260728.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260728.mp3"}, {"date": "2026-07-27", "title": "常年期 第十七週 星期一", "gospel": "瑪十三31-35", "text_url": "https://ccreadbible.info/homily-2026/homily-20260727.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260727.mp3"}, {"date": "2026-07-26", "title": "常年期第十七主日", "gospel": "瑪十三44-52", "text_url": "https://ccreadbible.info/homily-2026/homily-20260726.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260726.mp3"}, {"date": "2026-07-25", "title": "7月25日 聖雅各伯宗徒慶日", "gospel": "瑪二十20-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260725.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260725.mp3"}, {"date": "2026-07-24", "title": "常年期 第十六週 星期五", "gospel": "瑪十三18-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260724.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260724.mp3"}, {"date": "2026-07-19", "title": "常年期第十六主日", "gospel": "瑪十三24-43", "text_url": "https://ccreadbible.info/homily-2026/homily-20260719.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260719.mp3"}, {"date": "2026-07-18", "title": "常年期 第十五週 星期六", "gospel": "瑪十二14-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20260718.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260718.mp3"}, {"date": "2026-07-15", "title": "7月15日 聖文德主教聖師", "gospel": "瑪五13-19", "text_url": "https://ccreadbible.info/homily-2026/homily-20260715.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260715.mp3"}, {"date": "2026-07-14", "title": "常年期 第十五週 星期二", "gospel": "瑪十一20-24", "text_url": "https://ccreadbible.info/homily-2026/homily-20260714.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260714.mp3"}, {"date": "2026-07-13", "title": "常年期 第十五週 星期一", "gospel": "瑪十34-十一1", "text_url": "https://ccreadbible.info/homily-2026/homily-20260713.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260713.mp3"}, {"date": "2026-07-12", "title": "常年期第十五主日", "gospel": "瑪十三1-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260712.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260712.mp3"}, {"date": "2026-07-10", "title": "常年期 第十四週 星期五", "gospel": "瑪十16-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260710.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260710.mp3"}, {"date": "2026-07-09", "title": "7月9日 中華殉道諸聖節", "gospel": "若十二24-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260709.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260709.mp3"}, {"date": "2026-07-08", "title": "常年期 第十四週 星期三", "gospel": "瑪十1-7", "text_url": "https://ccreadbible.info/homily-2026/homily-20260708.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260708.mp3"}, {"date": "2026-07-07", "title": "常年期 第十四週 星期二", "gospel": "瑪九32-38", "text_url": "https://ccreadbible.info/homily-2026/homily-20260707.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260707.mp3"}, {"date": "2026-07-06", "title": "常年期 第十四週 星期一", "gospel": "瑪九18-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260706.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260706.mp3"}, {"date": "2026-07-05", "title": "常年期第十四主日", "gospel": "瑪十一25-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260705.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260705.mp3"}, {"date": "2026-06-24", "title": "6月24日 聖若翰洗者誕辰", "gospel": "路一57-66, 80", "text_url": "https://ccreadbible.info/homily-2026/homily-20260624.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260624.mp3"}, {"date": "2026-06-23", "title": "常年期 第十二週 星期二", "gospel": "瑪七6, 12-14", "text_url": "https://ccreadbible.info/homily-2026/homily-20260623.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260623.mp3"}, {"date": "2026-06-22", "title": "常年期 第十二週 星期一", "gospel": "瑪七1-5", "text_url": "https://ccreadbible.info/homily-2026/homily-20260622.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260622.mp3"}, {"date": "2026-06-21", "title": "常年期第十二主日", "gospel": "瑪十26-33", "text_url": "https://ccreadbible.info/homily-2026/homily-20260621.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260621.mp3"}, {"date": "2026-06-20", "title": "常年期 第十一週 星期六", "gospel": "瑪六24-34", "text_url": "https://ccreadbible.info/homily-2026/homily-20260620.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260620.mp3"}, {"date": "2026-06-19", "title": "常年期 第十一週 星期五", "gospel": "瑪六19-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260619.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260619.mp3"}, {"date": "2026-06-18", "title": "常年期 第十一週 星期四", "gospel": "瑪六7-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260618.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260618.mp3"}, {"date": "2026-06-17", "title": "常年期 第十一週 星期三", "gospel": "瑪六1-6, 16-18", "text_url": "https://ccreadbible.info/homily-2026/homily-20260617.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260617.mp3"}, {"date": "2026-06-16", "title": "常年期 第十一週 星期二", "gospel": "瑪五43-48", "text_url": "https://ccreadbible.info/homily-2026/homily-20260616.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260616.mp3"}, {"date": "2026-06-15", "title": "常年期 第十一週 星期一", "gospel": "瑪五38-42", "text_url": "https://ccreadbible.info/homily-2026/homily-20260615.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260615.mp3"}, {"date": "2026-06-14", "title": "耶穌聖心節", "gospel": "瑪十一25-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260614.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260614.mp3"}, {"date": "2026-06-13", "title": "6月13日 聖安多尼", "gospel": "谷十六15-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260613.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260613.mp3"}, {"date": "2026-06-12", "title": "常年期 第十週 星期五", "gospel": "瑪五27-32", "text_url": "https://ccreadbible.info/homily-2026/homily-20260612.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260612.mp3"}, {"date": "2026-06-11", "title": "6月11日 聖巴爾納伯使徒", "gospel": "瑪十7-13", "text_url": "https://ccreadbible.info/homily-2026/homily-20260611.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260611.mp3"}, {"date": "2026-06-10", "title": "常年期 第十週 星期三", "gospel": "瑪五17-19", "text_url": "https://ccreadbible.info/homily-2026/homily-20260610.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260610.mp3"}, {"date": "2026-06-09", "title": "常年期 第十週 星期二", "gospel": "瑪五13-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20260609.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260609.mp3"}, {"date": "2026-06-08", "title": "常年期 第十週 星期一", "gospel": "瑪五1-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260608.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260608.mp3"}, {"date": "2026-06-07", "title": "基督聖體聖血節", "gospel": "若六51-58", "text_url": "https://ccreadbible.info/homily-2026/homily-20260607.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260607.mp3"}, {"date": "2026-06-06", "title": "常年期 第九週 星期六", "gospel": "谷十二38-44", "text_url": "https://ccreadbible.info/homily-2026/homily-20260606.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260606.mp3"}, {"date": "2026-06-05", "title": "常年期 第九週 星期五", "gospel": "谷十二35-37", "text_url": "https://ccreadbible.info/homily-2026/homily-20260605.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260605.mp3"}, {"date": "2026-06-05", "title": "6月特敬耶穌聖心－耶穌聖心敬禮簡介", "gospel": "無", "text_url": "https://ccreadbible.info/homily-2026/homily-20260605-1.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260605-1.mp3", "extra": true}, {"date": "2026-06-04", "title": "常年期 第九週 星期四", "gospel": "谷十二28-34", "text_url": "https://ccreadbible.info/homily-2026/homily-20260604.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260604.mp3"}, {"date": "2026-06-03", "title": "常年期 第九週 星期三", "gospel": "谷十二18-27", "text_url": "https://ccreadbible.info/homily-2026/homily-20260603.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260603.mp3"}, {"date": "2026-06-02", "title": "常年期 第九週 星期二", "gospel": "谷十二13-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20260602.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260602.mp3"}, {"date": "2026-06-01", "title": "常年期 第九週 星期一", "gospel": "谷十二1-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260601.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260601.mp3"}, {"date": "2026-05-31", "title": "天主聖三節", "gospel": "若三16-18", "text_url": "https://ccreadbible.info/homily-2026/homily-20260531.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260531.mp3"}, {"date": "2026-05-29", "title": "常年期 第八週 星期五", "gospel": "谷十一11-25", "text_url": "https://ccreadbible.info/homily-2026/homily-20260529.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260529.mp3"}, {"date": "2026-05-24", "title": "聖神降臨節", "gospel": "若二十19-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260524.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260524.mp3"}, {"date": "2026-05-23", "title": "復活期 第七週 星期六", "gospel": "若二一20-25", "text_url": "https://ccreadbible.info/homily-2026/homily-20260523.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260523.mp3"}, {"date": "2026-05-22", "title": "復活期 第七週 星期五", "gospel": "若二一15-19", "text_url": "https://ccreadbible.info/homily-2026/homily-20260522.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260522.mp3"}, {"date": "2026-05-21", "title": "復活期 第七週 星期四", "gospel": "若十七20-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260521.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260521.mp3"}, {"date": "2026-05-20", "title": "復活期 第七週 星期三", "gospel": "若十七11-19", "text_url": "https://ccreadbible.info/homily-2026/homily-20260520.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260520.mp3"}, {"date": "2026-05-19", "title": "復活期 第七週 星期二", "gospel": "若十七1-11", "text_url": "https://ccreadbible.info/homily-2026/homily-20260519.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260519.mp3"}, {"date": "2026-05-17", "title": "耶穌升天節", "gospel": "瑪二八16-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260517.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260517.mp3"}, {"date": "2026-05-16", "title": "復活期 第六週 星期六", "gospel": "若十六23-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260516.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260516.mp3"}, {"date": "2026-05-15", "title": "復活期 第六週 星期五", "gospel": "若十六20-23a", "text_url": "https://ccreadbible.info/homily-2026/homily-20260515.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260515.mp3"}, {"date": "2026-05-14", "title": "5月14日 聖瑪弟亞宗徒慶日", "gospel": "若十五9-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20260514.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260514.mp3"}, {"date": "2026-05-13", "title": "復活期 第六週 星期三", "gospel": "若十六12-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260513.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260513.mp3"}, {"date": "2026-05-12", "title": "復活期 第六週 星期二", "gospel": "若十六5-11", "text_url": "https://ccreadbible.info/homily-2026/homily-20260512.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260512.mp3"}, {"date": "2026-05-11", "title": "復活期 第六週 星期一", "gospel": "若十五26-十六4", "text_url": "https://ccreadbible.info/homily-2026/homily-20260511.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260511.mp3"}, {"date": "2026-05-10", "title": "復活期第六主日", "gospel": "若十四15-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20260510.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260510.mp3"}, {"date": "2026-05-08", "title": "復活期 第五週 星期五", "gospel": "若十五12-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20260508.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260508.mp3"}, {"date": "2026-05-07", "title": "復活期 第五週 星期四", "gospel": "若十五9-11", "text_url": "https://ccreadbible.info/homily-2026/homily-20260507.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260507.mp3"}, {"date": "2026-05-06", "title": "復活期 第五週 星期三", "gospel": "若十五1-8", "text_url": "https://ccreadbible.info/homily-2026/homily-20260506.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260506.mp3"}, {"date": "2026-05-05", "title": "復活期 第五週 星期二", "gospel": "若十四27-31", "text_url": "https://ccreadbible.info/homily-2026/homily-20260505.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260505.mp3"}, {"date": "2026-05-04", "title": "復活期 第五週 星期一", "gospel": "若十四21-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260504.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260504.mp3"}, {"date": "2026-05-03", "title": "復活期第五主日", "gospel": "若十四1-14", "text_url": "https://ccreadbible.info/homily-2026/homily-20260503.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260503.mp3"}, {"date": "2026-05-01", "title": "復活期 第四週 星期五", "gospel": "若十四1-6", "text_url": "https://ccreadbible.info/homily-2026/homily-20260501.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260501.mp3"}, {"date": "2026-04-30", "title": "復活期 第四週 星期四", "gospel": "若十三16-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260430.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260430.mp3"}, {"date": "2026-04-29", "title": "復活期 第四週 星期三", "gospel": "若十二44-50", "text_url": "https://ccreadbible.info/homily-2026/homily-20260429.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260429.mp3"}, {"date": "2026-04-16", "title": "復活期 第二週 星期四", "gospel": "若三31-36", "text_url": "https://ccreadbible.info/homily-2026/homily-20260416.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260416.mp3"}, {"date": "2026-04-15", "title": "復活期 第二週 星期三", "gospel": "若三16-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20260415.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260415.mp3"}, {"date": "2026-04-14", "title": "復活期 第二週 星期二", "gospel": "若三7-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260414.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260414.mp3"}, {"date": "2026-04-13", "title": "復活期 第二週 星期一", "gospel": "若三1-8", "text_url": "https://ccreadbible.info/homily-2026/homily-20260413.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260413.mp3"}, {"date": "2026-04-12", "title": "復活期第二主日", "gospel": "若二十19-31", "text_url": "https://ccreadbible.info/homily-2026/homily-20260412.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260412.mp3"}, {"date": "2026-04-11", "title": "復活八日慶 星期六", "gospel": "谷十六9-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260411.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260411.mp3"}, {"date": "2026-04-10", "title": "復活八日慶 星期五", "gospel": "路二一1-14", "text_url": "https://ccreadbible.info/homily-2026/homily-20260410.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260410.mp3"}, {"date": "2026-04-09", "title": "復活八日慶 星期四", "gospel": "路二四35-48", "text_url": "https://ccreadbible.info/homily-2026/homily-20260409.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260409.mp3"}, {"date": "2026-04-08", "title": "復活八日慶 星期三", "gospel": "路二四13-35", "text_url": "https://ccreadbible.info/homily-2026/homily-20260408.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260408.mp3"}, {"date": "2026-04-07", "title": "復活八日慶 星期二", "gospel": "若二十11-18", "text_url": "https://ccreadbible.info/homily-2026/homily-20260407.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260407.mp3"}, {"date": "2026-04-06", "title": "復活八日慶 星期一", "gospel": "瑪二八8-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260406.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260406.mp3"}, {"date": "2026-04-05", "title": "復活主日", "gospel": "若二十1-18", "text_url": "https://ccreadbible.info/homily-2026/homily-20260405.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260405.mp3"}, {"date": "2026-04-04", "title": "聖週 星期六（復活聖夜）", "gospel": "瑪二八1-10", "text_url": "https://ccreadbible.info/homily-2026/homily-20260404.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260404.mp3"}, {"date": "2026-04-03", "title": "聖週 星期五（主受難日）", "gospel": "若十八1-十九42", "text_url": "https://ccreadbible.info/homily-2026/homily-20260403.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260403.mp3"}, {"date": "2026-04-02", "title": "聖週 星期四（主的晚餐）", "gospel": "若十三1-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260402.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260402.mp3"}, {"date": "2026-04-01", "title": "聖週 星期三", "gospel": "瑪二六14-25", "text_url": "https://ccreadbible.info/homily-2026/homily-20260401.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260401.mp3"}, {"date": "2026-03-31", "title": "聖週 星期二", "gospel": "若十三21-33, 36-38", "text_url": "https://ccreadbible.info/homily-2026/homily-20260331.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260331.mp3"}, {"date": "2026-03-30", "title": "聖週 星期一", "gospel": "若十二1-11", "text_url": "https://ccreadbible.info/homily-2026/homily-20260330.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260330.mp3"}, {"date": "2026-03-29", "title": "聖枝主日", "gospel": "瑪二六14-二七66", "text_url": "https://ccreadbible.info/homily-2026/homily-20260329.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260329.mp3"}, {"date": "2026-03-27", "title": "四旬期 第五週 星期五", "gospel": "若十31-42", "text_url": "https://ccreadbible.info/homily-2026/homily-20260327.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260327.mp3"}, {"date": "2026-03-26", "title": "四旬期 第五週 星期四", "gospel": "若八51-59", "text_url": "https://ccreadbible.info/homily-2026/homily-20260326.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260326.mp3"}, {"date": "2026-03-25", "title": "3月25日 天使報喜節", "gospel": "路一26-38", "text_url": "https://ccreadbible.info/homily-2026/homily-20260325.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260325.mp3"}, {"date": "2026-03-24", "title": "四旬期 第五週 星期二", "gospel": "若八21-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260324.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260324.mp3"}, {"date": "2026-03-23", "title": "四旬期 第五週 星期一", "gospel": "若八1-11", "text_url": "https://ccreadbible.info/homily-2026/homily-20260323.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260323.mp3"}, {"date": "2026-03-22", "title": "四旬期第五主日", "gospel": "若十一1-45", "text_url": "https://ccreadbible.info/homily-2026/homily-20260322.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260322.mp3"}, {"date": "2026-03-19", "title": "3月19日 中華主保聖若瑟", "gospel": "瑪一16, 18-21, 24", "text_url": "https://ccreadbible.info/homily-2026/homily-20260319.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260319.mp3"}, {"date": "2026-03-18", "title": "四旬期 第四週 星期三", "gospel": "若五17-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260318.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260318.mp3"}, {"date": "2026-03-17", "title": "四旬期 第四週 星期二", "gospel": "若五1-3, 5-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20260317.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260317.mp3"}, {"date": "2026-03-16", "title": "四旬期 第四週 星期一", "gospel": "若四43-54", "text_url": "https://ccreadbible.info/homily-2026/homily-20260316.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260316.mp3"}, {"date": "2026-03-15", "title": "四旬期第四主日", "gospel": "若九1-41", "text_url": "https://ccreadbible.info/homily-2026/homily-20260315.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260315.mp3"}, {"date": "2026-03-14", "title": "四旬期 第三週 星期六", "gospel": "路十八9-14", "text_url": "https://ccreadbible.info/homily-2026/homily-20260314.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260314.mp3"}, {"date": "2026-03-13", "title": "四旬期 第三週 星期五", "gospel": "谷十二28-34", "text_url": "https://ccreadbible.info/homily-2026/homily-20260313.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260313.mp3"}, {"date": "2026-03-12", "title": "四旬期 第三週 星期四", "gospel": "路十一14-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260312.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260312.mp3"}, {"date": "2026-03-11", "title": "四旬期 第三週 星期三", "gospel": "瑪五17-19", "text_url": "https://ccreadbible.info/homily-2026/homily-20260311.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260311.mp3"}, {"date": "2026-03-10", "title": "四旬期 第三週 星期二", "gospel": "瑪十八21-35", "text_url": "https://ccreadbible.info/homily-2026/homily-20260310.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260310.mp3"}, {"date": "2026-03-09", "title": "四旬期 第三週 星期一", "gospel": "路四24-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260309.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260309.mp3"}, {"date": "2026-03-08", "title": "四旬期第三主日", "gospel": "若四5-42", "text_url": "https://ccreadbible.info/homily-2026/homily-20260308.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260308.mp3"}, {"date": "2026-03-06", "title": "四旬期 第二週 星期五", "gospel": "瑪二一33-43, 45-46", "text_url": "https://ccreadbible.info/homily-2026/homily-20260306.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260306.mp3"}, {"date": "2026-03-05", "title": "四旬期 第二週 星期四", "gospel": "路十六19-31", "text_url": "https://ccreadbible.info/homily-2026/homily-20260305.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260305.mp3"}, {"date": "2026-03-04", "title": "四旬期 第二週 星期三", "gospel": "瑪二十17-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260304.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260304.mp3"}, {"date": "2026-03-03", "title": "朝聖彌撒_聖國柏神父紀念堂", "gospel": "若十五12-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20260303.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260303.mp3"}, {"date": "2026-03-02", "title": "朝聖彌撒_黑崎天主堂（四旬期 第二週 星期一）", "gospel": "路六36-38", "text_url": "https://ccreadbible.info/homily-2026/homily-20260302.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260302.mp3"}, {"date": "2026-03-01", "title": "朝聖彌撒_日本二十六殉道聖人堂（四旬期第二主日）", "gospel": "瑪十七1-9", "text_url": "https://ccreadbible.info/homily-2026/homily-20260301.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260301.mp3"}, {"date": "2026-02-28", "title": "朝聖彌撒_雲先天主堂", "gospel": "瑪五43-48", "text_url": "https://ccreadbible.info/homily-2026/homily-20260228.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260228.mp3"}, {"date": "2026-02-27", "title": "朝聖彌撒_島原半島島原天主堂", "gospel": "瑪五20-26", "text_url": "https://ccreadbible.info/homily-2026/homily-20260227.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260227.mp3"}, {"date": "2026-02-26", "title": "朝聖彌撒_山口聖方濟沙勿略朝聖地", "gospel": "谷十六15-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260226.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260226.mp3"}, {"date": "2026-02-23", "title": "四旬期 第一週 星期一", "gospel": "瑪二五31-46", "text_url": "https://ccreadbible.info/homily-2026/homily-20260223.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260223.mp3"}, {"date": "2026-02-22", "title": "四旬期第一主日", "gospel": "瑪四1-11", "text_url": "https://ccreadbible.info/homily-2026/homily-20260222.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260222.mp3"}, {"date": "2026-02-21", "title": "四旬期 聖灰禮後 星期六", "gospel": "路五27-32", "text_url": "https://ccreadbible.info/homily-2026/homily-20260221.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260221.mp3"}, {"date": "2026-02-20", "title": "四旬期 聖灰禮後 星期五", "gospel": "路九14-15", "text_url": "https://ccreadbible.info/homily-2026/homily-20260220.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260220.mp3"}, {"date": "2026-02-19", "title": "四旬期 聖灰禮後 星期四", "gospel": "路九22-25", "text_url": "https://ccreadbible.info/homily-2026/homily-20260219.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260219.mp3"}, {"date": "2026-02-18", "title": "四旬期 聖灰禮儀 星期三", "gospel": "瑪六1-6, 16-18", "text_url": "https://ccreadbible.info/homily-2026/homily-20260218.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260218.mp3"}, {"date": "2026-02-17", "title": "春節彌撒", "gospel": "瑪六31-34", "text_url": "https://ccreadbible.info/homily-2026/homily-20260217.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260217.mp3"}, {"date": "2026-02-16", "title": "常年期 第六週 星期一", "gospel": "谷八11-13", "text_url": "https://ccreadbible.info/homily-2026/homily-20260216.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260216.mp3"}, {"date": "2026-02-15", "title": "常年期第六主日", "gospel": "瑪五17-37", "text_url": "https://ccreadbible.info/homily-2026/homily-20260215.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260215.mp3"}, {"date": "2026-02-14", "title": "常年期 第五週 星期六", "gospel": "谷八1-10", "text_url": "https://ccreadbible.info/homily-2026/homily-20260214.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260214.mp3"}, {"date": "2026-02-13", "title": "常年期 第五週 星期五", "gospel": "谷七31-37", "text_url": "https://ccreadbible.info/homily-2026/homily-20260213.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260213.mp3"}, {"date": "2026-02-12", "title": "常年期 第五週 星期四", "gospel": "谷七24-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260212.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260212.mp3"}, {"date": "2026-02-11", "title": "常年期 第五週 星期三", "gospel": "谷七14-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260211.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260211.mp3"}, {"date": "2026-02-10", "title": "常年期 第五週 星期二", "gospel": "谷七1-13", "text_url": "https://ccreadbible.info/homily-2026/homily-20260210.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260210.mp3"}, {"date": "2026-02-09", "title": "常年期 第五週 星期一", "gospel": "谷六53-56", "text_url": "https://ccreadbible.info/homily-2026/homily-20260209.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260209.mp3"}, {"date": "2026-02-08", "title": "常年期第五主日", "gospel": "瑪五13-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20260208.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260208.mp3"}, {"date": "2026-02-07", "title": "常年期 第四週 星期六", "gospel": "谷六30-34", "text_url": "https://ccreadbible.info/homily-2026/homily-20260207.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260207.mp3"}, {"date": "2026-02-02", "title": "2月2日 獻耶穌於聖殿", "gospel": "路二22-40", "text_url": "https://ccreadbible.info/homily-2026/homily-20260202.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260202.mp3"}, {"date": "2026-02-01", "title": "常年期第四主日", "gospel": "瑪五1-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260201.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260201.mp3"}, {"date": "2026-01-30", "title": "常年期 第三週 星期五", "gospel": "谷四26-34", "text_url": "https://ccreadbible.info/homily-2026/homily-20260130.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260130.mp3"}, {"date": "2026-01-29", "title": "常年期 第三週 星期四", "gospel": "谷四21-25", "text_url": "https://ccreadbible.info/homily-2026/homily-20260129.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260129.mp3"}, {"date": "2026-01-28", "title": "常年期 第三週 星期三", "gospel": "谷四1-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260128.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260128.mp3"}, {"date": "2026-01-27", "title": "常年期 第三週 星期二", "gospel": "谷三31-35", "text_url": "https://ccreadbible.info/homily-2026/homily-20260127.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260127.mp3"}, {"date": "2026-01-26", "title": "常年期 第三週 星期一", "gospel": "谷三22-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260126.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260126.mp3"}, {"date": "2026-01-25", "title": "常年期第三主日", "gospel": "瑪四12-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260125.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260125.mp3"}, {"date": "2026-01-23", "title": "常年期 第二週 星期五", "gospel": "谷三13-19", "text_url": "https://ccreadbible.info/homily-2026/homily-20260123.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260123.mp3"}, {"date": "2026-01-22", "title": "常年期 第二週 星期四", "gospel": "谷三7-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260122.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260122.mp3"}, {"date": "2026-01-21", "title": "常年期 第二週 星期三", "gospel": "谷三1-6", "text_url": "https://ccreadbible.info/homily-2026/homily-20260121.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260121.mp3"}, {"date": "2026-01-20", "title": "常年期 第二週 星期二", "gospel": "谷二23-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260120.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260120.mp3"}, {"date": "2026-01-19", "title": "常年期 第二週 星期一", "gospel": "谷二18-22", "text_url": "https://ccreadbible.info/homily-2026/homily-20260119.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260119.mp3"}, {"date": "2026-01-18", "title": "常年期第二主日", "gospel": "若一29-34", "text_url": "https://ccreadbible.info/homily-2026/homily-20260118.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260118.mp3"}, {"date": "2026-01-17", "title": "常年期 第一週 星期六", "gospel": "谷二13-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20260117.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260117.mp3"}, {"date": "2026-01-16", "title": "常年期 第一週 星期五", "gospel": "谷二1-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260116.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260116.mp3"}, {"date": "2026-01-15", "title": "常年期 第一週 星期四", "gospel": "谷一40-45", "text_url": "https://ccreadbible.info/homily-2026/homily-20260115.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260115.mp3"}, {"date": "2026-01-14", "title": "常年期 第一週 星期三", "gospel": "谷一29-39", "text_url": "https://ccreadbible.info/homily-2026/homily-20260114.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260114.mp3"}, {"date": "2026-01-13", "title": "常年期 第一週 星期二", "gospel": "谷一21-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260113.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260113.mp3"}, {"date": "2026-01-12", "title": "常年期 第一週 星期一", "gospel": "谷一14-20", "text_url": "https://ccreadbible.info/homily-2026/homily-20260112.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260112.mp3"}, {"date": "2026-01-11", "title": "主受洗節", "gospel": "瑪三13-17", "text_url": "https://ccreadbible.info/homily-2026/homily-20260111.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260111.mp3"}, {"date": "2026-01-10", "title": "主顯節後 星期六", "gospel": "若三22-30", "text_url": "https://ccreadbible.info/homily-2026/homily-20260110.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260110.mp3"}, {"date": "2026-01-09", "title": "主顯節後 星期五", "gospel": "路五12-16", "text_url": "https://ccreadbible.info/homily-2026/homily-20260109.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260109.mp3"}, {"date": "2026-01-08", "title": "主顯節後 星期四", "gospel": "路四14-22", "text_url": "https://ccreadbible.info/homily-2026/homily-20260108.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260108.mp3"}, {"date": "2026-01-07", "title": "主顯節後 星期三", "gospel": "谷六45-52", "text_url": "https://ccreadbible.info/homily-2026/homily-20260107.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260107.mp3"}, {"date": "2026-01-06", "title": "主顯節後 星期二", "gospel": "谷六34-44", "text_url": "https://ccreadbible.info/homily-2026/homily-20260106.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260106.mp3"}, {"date": "2026-01-05", "title": "主顯節後 星期一", "gospel": "瑪四12-17, 23-25", "text_url": "https://ccreadbible.info/homily-2026/homily-20260105.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260105.mp3"}, {"date": "2026-01-04", "title": "主顯節", "gospel": "瑪二1-12", "text_url": "https://ccreadbible.info/homily-2026/homily-20260104.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260104.mp3"}, {"date": "2026-01-03", "title": "1月3日 耶穌聖名", "gospel": "瑪一18-23", "text_url": "https://ccreadbible.info/homily-2026/homily-20260103.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260103.mp3"}, {"date": "2026-01-02", "title": "主顯節前1月2日", "gospel": "若一19-28", "text_url": "https://ccreadbible.info/homily-2026/homily-20260102.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260102.mp3"}, {"date": "2026-01-01", "title": "1月1日 天主之母節", "gospel": "路二16-21", "text_url": "https://ccreadbible.info/homily-2026/homily-20260101.html", "mp3_url": "https://www.ccreadbible.net/bona/2026homily/20260101.mp3"}];
+var LITURGICAL = [{"label": "常年期第三十二主日 · 甲年", "entries": [{"date": "2023-11-12", "title": "常年期第三十二主日", "gospel": "瑪二五1-13", "mp3_url": "https://www.ccreadbible.net/bona/2023homily/20231112.mp3", "size": "约2.7M"}, {"date": "2020-11-08", "title": "常年期第三十二主日", "gospel": "瑪二五1-13", "mp3_url": "https://www.ccreadbible.net/bona/2020homily/20201108.mp3", "size": "约2.7M"}, {"date": "2017-11-12", "title": "常年期第三十二主日", "gospel": "瑪二五1-13", "mp3_url": "https://www.ccreadbible.net/bona/2017homily/20171112.mp3", "size": "约2.5M"}]}];
+var MISSING = ["2026-01-24", "2026-01-31", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-24", "2026-02-25", "2026-03-07", "2026-03-20", "2026-03-21", "2026-03-28", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-05-02", "2026-05-09", "2026-05-18", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-30", "2026-06-25", "2026-06-26", "2026-06-27", "2026-06-28", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-04", "2026-07-11", "2026-07-16", "2026-07-17", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-08-11", "2026-08-15", "2026-08-21", "2026-09-03", "2026-09-05", "2026-09-09", "2026-09-11", "2026-09-12", "2026-10-31"];
+(function(){
+  var audio=document.getElementById('audio');
+  var bigPlay=document.getElementById('bigPlay');
+  var playerBox=document.getElementById('playerBox');
+  var seek=document.getElementById('seek');
+  var cur=document.getElementById('cur'), dur=document.getElementById('dur');
+  var nowTitle=document.getElementById('nowTitle'), nowSub=document.getElementById('nowSub');
+  var status=document.getElementById('status');
+  var textLink=document.getElementById('textLink');
+  var sticky=document.getElementById('sticky'), stickyPlay=document.getElementById('stickyPlay'), stickyTitle=document.getElementById('stickyTitle'), stickySub=document.getElementById('stickySub'), stickyIcon=document.getElementById('stickyIcon');
+  var listEl=document.getElementById('list'), countLine=document.getElementById('countLine'), emptyState=document.getElementById('emptyState'), emptyText=document.getElementById('emptyText');
+  var datePick=document.getElementById('datePick');
+  var currentSrc=audio.src, speeds=[1,1.25,1.5,0.85], si=0, attempted=false;
+  var filterMonth='all', filterDate='';
+
+  var WK=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  function fmt(s){ if(!isFinite(s)||s<0) return "--:--"; s=Math.floor(s); return Math.floor(s/60)+":"+String(s%60).padStart(2,'0'); }
+  function parseDate(ds){ var p=ds.split('-'); return new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10)); }
+  function dateLabel(ds){ var d=parseDate(ds), p=ds.split('-'); return parseInt(p[1],10)+"月"+parseInt(p[2],10)+"日 · "+WK[d.getDay()]; }
+  function playTitle(e){ return dateLabel(e.date)+" "+e.title; }
+  function playSub(e){ return (!e.gospel || e.gospel==='無' || e.gospel==='无') ? '专题讲道' : ('福音：'+e.gospel); }
+
+  function setPlayingUI(playing){
+    playerBox.classList.toggle('is-playing', playing);
+    stickyIcon.innerHTML= playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+    document.querySelectorAll('.item').forEach(function(el){
+      var btn=el.querySelector('.mini-play svg');
+      if(!btn) return;
+      var isCur = el.getAttribute('data-src')===currentSrc;
+      btn.innerHTML = (isCur && playing) ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+    });
+  }
+  function loadTrack(src,title,sub,textUrl,autoplay){
+    if(src!==currentSrc){ audio.src=src; currentSrc=src; cur.textContent='0:00'; }
+    nowTitle.textContent=title; nowSub.textContent=sub;
+    stickyTitle.textContent=title; stickySub.textContent=sub;
+    if(textLink){ if(textUrl){ textLink.href=textUrl; textLink.style.display='inline-flex'; } else { textLink.style.display='none'; } }
+    document.querySelectorAll('.item').forEach(function(el){ el.classList.toggle('active', el.getAttribute('data-src')===src); });
+    status.textContent="正在加载…";
+    if(autoplay){ attempted=true; audio.play().catch(function(){ status.textContent="加载中，请再点一次播放。"; }); }
+    setPlayingUI(!audio.paused);
+  }
+  function toggle(){
+    attempted=true;
+    if(audio.paused){ audio.play().catch(function(){ status.textContent="音频加载失败，请检查网络后重试。"; }); }
+    else audio.pause();
+  }
+
+  function render(){
+    var filtered = ENTRIES.filter(function(e){
+      if(filterDate) return e.date===filterDate;
+      if(filterMonth!=='all') return parseInt(e.date.split('-')[1],10)===parseInt(filterMonth,10);
+      return true;
+    });
+    listEl.innerHTML='';
+    filtered.forEach(function(e){
+      var d=parseDate(e.date), p=e.date.split('-');
+      var art=document.createElement('article');
+      art.className='item'+(e.extra?' solemn':'');
+      art.setAttribute('data-src', e.mp3_url);
+      art.setAttribute('data-title', playTitle(e));
+      art.setAttribute('data-sub', playSub(e));
+      art.setAttribute('data-text', e.text_url);
+      if(e.mp3_url===currentSrc) art.classList.add('active');
+      var gospelLine = (!e.gospel || e.gospel==='無' || e.gospel==='无') ? '专题讲道 · 同日第二条' : ('福音：'+e.gospel);
+      art.innerHTML =
+        '<div class="datebox"><b>'+parseInt(p[2],10)+'</b><span>'+parseInt(p[1],10)+'月 · '+WK[d.getDay()].replace('星期','周')+'</span></div>'+
+        '<div class="item-main"><h4>'+e.title+(e.extra?'<span class="extra-badge">专题</span>':'')+'</h4><p>'+gospelLine+'</p><div class="meta">'+e.date+' · 思高读经推广中心</div>'+
+        '<a class="text-link" href="'+e.text_url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">文字页 ↗</a></div>'+
+        '<button class="mini-play" aria-label="播放'+e.title+'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>';
+      (function(entry, el){
+        el.querySelector('.mini-play').addEventListener('click', function(ev){
+          ev.stopPropagation();
+          var src=entry.mp3_url;
+          if(src===currentSrc){ toggle(); window.scrollTo({top:0,behavior:'smooth'}); return; }
+          loadTrack(src, playTitle(entry), playSub(entry), entry.text_url, true);
+          window.scrollTo({top:0,behavior:'smooth'});
+        });
+        el.addEventListener('click', function(){
+          loadTrack(entry.mp3_url, playTitle(entry), playSub(entry), entry.text_url, false);
+          window.scrollTo({top:0,behavior:'smooth'});
+        });
+      })(e, art);
+      listEl.appendChild(art);
+    });
+    // count + empty state
+    if(filterDate){
+      if(filtered.length===0){
+        var isMissing = MISSING.indexOf(filterDate)>=0;
+        emptyText.textContent = isMissing ? '这一天（'+dateLabel(filterDate)+'）原站没有讲道。' : '这一天没有找到讲道。';
+        emptyState.classList.add('show');
+        countLine.innerHTML='按日期查找：<b>'+dateLabel(filterDate)+'</b> · 无讲道';
+      } else {
+        emptyState.classList.remove('show');
+        countLine.innerHTML='按日期查找：<b>'+dateLabel(filterDate)+'</b> · 共 <b>'+filtered.length+'</b> 条';
+      }
+    } else if(filterMonth!=='all'){
+      emptyState.classList.remove('show');
+      countLine.innerHTML='正在显示：<b>2026年'+filterMonth+'月</b> · 共 <b>'+filtered.length+'</b> 条（按日期从新到旧）';
+    } else {
+      emptyState.classList.remove('show');
+      countLine.innerHTML='正在显示：<b>全部 264 条</b> · 2026年1月1日 — 11月8日（按日期从新到旧）';
+    }
+    setPlayingUI(!audio.paused);
+  }
+
+  document.querySelectorAll('.month-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.month-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      filterMonth=btn.getAttribute('data-month');
+      filterDate=''; datePick.value='';
+      render();
+    });
+  });
+  datePick.addEventListener('change', function(){
+    filterDate=datePick.value||'';
+    if(filterDate){
+      document.querySelectorAll('.month-btn').forEach(function(b){ b.classList.remove('active'); });
+    } else {
+      document.querySelectorAll('.month-btn').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-month')==='all'); });
+      filterMonth='all';
+    }
+    render();
+  });
+  document.getElementById('clearFilter').addEventListener('click', function(){
+    filterMonth='all'; filterDate=''; datePick.value='';
+    document.querySelectorAll('.month-btn').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-month')==='all'); });
+    render();
+  });
+
+  bigPlay.addEventListener('click',toggle);
+  stickyPlay.addEventListener('click',toggle);
+  audio.addEventListener('play',function(){ setPlayingUI(true); sticky.classList.add('show'); status.textContent="正在播放 · "+nowTitle.textContent; if('mediaSession' in navigator){ try{ navigator.mediaSession.metadata=new MediaMetadata({title:nowTitle.textContent,artist:'每日弥撒讲道',album:'思高读经推广中心'});}catch(e){} } });
+  audio.addEventListener('pause',function(){ setPlayingUI(false); status.textContent="已暂停，点金色按钮继续。"; });
+  audio.addEventListener('ended',function(){ setPlayingUI(false); status.textContent="播放完毕。愿天主降福你。"; });
+  audio.addEventListener('loadedmetadata',function(){ dur.textContent=fmt(audio.duration); seek.max=audio.duration||100; });
+  audio.addEventListener('durationchange',function(){ dur.textContent=fmt(audio.duration); seek.max=audio.duration||100; });
+  audio.addEventListener('timeupdate',function(){ cur.textContent=fmt(audio.currentTime); if(document.activeElement!==seek) seek.value=audio.currentTime; });
+  audio.addEventListener('waiting',function(){ status.textContent="缓冲中，请稍候…"; });
+  audio.addEventListener('error',function(){ if(attempted) status.textContent="这条音频暂时加载不到，请切换网络后重试，或打开原站收听。"; });
+  seek.addEventListener('input',function(){ audio.currentTime=parseFloat(seek.value); cur.textContent=fmt(audio.currentTime); });
+  document.getElementById('back15').addEventListener('click',function(){ audio.currentTime=Math.max(0,audio.currentTime-15); });
+  document.getElementById('fwd15').addEventListener('click',function(){ audio.currentTime=Math.min(audio.duration||1e9,audio.currentTime+15); });
+  document.getElementById('speedBtn').addEventListener('click',function(e){ si=(si+1)%speeds.length; audio.playbackRate=speeds[si]; e.target.textContent="倍速 "+speeds[si].toFixed(2).replace(/0$/,'')+"×"; });
+
+  // 同一礼仪日：点行或按钮，用顶部播放器播放（这些条目原站无文字页，不传文字页链接）
+  document.querySelectorAll('.past-item').forEach(function(el){
+    var src=el.getAttribute('data-src'), entry=null;
+    LITURGICAL.forEach(function(g){ g.entries.forEach(function(p){ if(p.mp3_url===src) entry=p; }); });
+    if(!entry) return;
+    el.querySelector('.mini-play').addEventListener('click', function(ev){
+      ev.stopPropagation();
+      if(src===currentSrc){ toggle(); window.scrollTo({top:0,behavior:'smooth'}); return; }
+      loadTrack(entry.mp3_url, playTitle(entry), playSub(entry), null, true);
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+    el.addEventListener('click', function(){
+      loadTrack(entry.mp3_url, playTitle(entry), playSub(entry), null, false);
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+
+  // 2026 全年讲道折叠：默认收起，点标题行展开/收起（折叠外壳在自动更新脚本的替换区域之外）
+  var yearToggle=document.getElementById('yearToggle'), yearBody=document.getElementById('yearBody');
+  function setYear(open){
+    yearBody.hidden=!open;
+    yearToggle.classList.toggle('open', open);
+    yearToggle.setAttribute('aria-expanded', open?'true':'false');
+  }
+  yearToggle.addEventListener('click', function(){ setYear(yearBody.hidden); });
+  yearToggle.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setYear(yearBody.hidden); } });
+
+  render();
+})();
+</script>
+<script>
+/* ===== 首页内嵌导读（旧约／新约）：折叠分组＋搜索＋各板块自有播放器，数据与独立导读页相同 ===== */
+var OT_NOTICES = [{"section": "智慧書", "after_index": 12, "text": "德訓篇三-四二 因思高中心、JDSB聯合朝聖，無錄音檔。"}, {"section": "歷史書", "after_index": 64, "text": "民長紀十七-二一 無錄音檔。"}];
+var OT_BIBLE = [
+{"date": "2023-10-30", "section": "12小先知書", "content": "瑪拉基亞", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231030.mp3", "size": "約2.0M"},
+{"date": "2023-10-28", "section": "12小先知書", "content": "匝加利亞十二-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231028.mp3", "size": "約0.8M"},
+{"date": "2023-10-27", "section": "12小先知書", "content": "匝加利亞九-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231027.mp3", "size": "約0.7M"},
+{"date": "2023-10-26", "section": "12小先知書", "content": "匝加利亞六-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231026.mp3", "size": "約1.3M"},
+{"date": "2023-10-25", "section": "12小先知書", "content": "匝加利亞一-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231025.mp3", "size": "約1.2M"},
+{"date": "2023-10-24", "section": "12小先知書", "content": "哈蓋", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231024.mp3", "size": "約1.1M"},
+{"date": "2023-10-23", "section": "12小先知書", "content": "索福尼亞", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231023.mp3", "size": "約1.2M"},
+{"date": "2023-10-20", "section": "12小先知書", "content": "哈巴谷", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231020.mp3", "size": "約2.1M"},
+{"date": "2023-10-19", "section": "12小先知書", "content": "納鴻", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231019.mp3", "size": "約1.0M"},
+{"date": "2023-10-18", "section": "12小先知書", "content": "米該亞四-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231018.mp3", "size": "約1.8M"},
+{"date": "2023-10-17", "section": "12小先知書", "content": "米該亞一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231017.mp3", "size": "約0.8M"},
+{"date": "2023-10-16", "section": "12小先知書", "content": "約納", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231016.mp3", "size": "約1.9M"},
+{"date": "2023-10-13", "section": "12小先知書", "content": "亞北底亞", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231013.mp3", "size": "約0.8M"},
+{"date": "2023-10-12", "section": "12小先知書", "content": "亞毛斯七-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231012.mp3", "size": "約1.2M"},
+{"date": "2023-10-11", "section": "12小先知書", "content": "亞毛斯四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231011.mp3", "size": "約1.1M"},
+{"date": "2023-10-10", "section": "12小先知書", "content": "亞毛斯一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231010.mp3", "size": "約1.3M"},
+{"date": "2023-10-09", "section": "12小先知書", "content": "岳厄爾", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231009.mp3", "size": "約1.7M"},
+{"date": "2023-10-05", "section": "12小先知書", "content": "歐瑟亞十二-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231005.mp3", "size": "約1.0M"},
+{"date": "2023-10-04", "section": "12小先知書", "content": "歐瑟亞八-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231004.mp3", "size": "約1.8M"},
+{"date": "2023-10-03", "section": "12小先知書", "content": "歐瑟亞四-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231003.mp3", "size": "約1.0M"},
+{"date": "2023-10-02", "section": "12小先知書", "content": "歐瑟亞一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231002.mp3", "size": "約1.8M"},
+{"date": "2023-09-29", "section": "先知書", "content": "達尼爾十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230929.mp3", "size": "約2.0M"},
+{"date": "2023-09-28", "section": "先知書", "content": "達尼爾十一-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230928.mp3", "size": "約1.8M"},
+{"date": "2023-09-27", "section": "先知書", "content": "達尼爾九-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230927.mp3", "size": "約1.7M"},
+{"date": "2023-09-26", "section": "先知書", "content": "達尼爾七-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230926.mp3", "size": "約1.5M"},
+{"date": "2023-09-25", "section": "先知書", "content": "達尼爾五-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230925.mp3", "size": "約2.1M"},
+{"date": "2023-09-22", "section": "先知書", "content": "達尼爾三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230922.mp3", "size": "約2.5M"},
+{"date": "2023-09-21", "section": "先知書", "content": "達尼爾一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230921.mp3", "size": "約1.6M"},
+{"date": "2023-09-20", "section": "先知書", "content": "厄則克耳四六-四八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230920.mp3", "size": "約1.7M"},
+{"date": "2023-09-19", "section": "先知書", "content": "厄則克耳四四-四五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230919.mp3", "size": "約1.0M"},
+{"date": "2023-09-18", "section": "先知書", "content": "厄則克耳四十-四三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230918.mp3", "size": "約1.6M"},
+{"date": "2023-09-15", "section": "先知書", "content": "厄則克耳三七-三九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230915.mp3", "size": "約1.1M"},
+{"date": "2023-09-13", "section": "先知書", "content": "厄則克耳三三-三六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230913.mp3", "size": "約2.3M"},
+{"date": "2023-09-11", "section": "先知書", "content": "厄則克耳三一-三二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230911.mp3", "size": "約1.2M"},
+{"date": "2023-09-08", "section": "先知書", "content": "厄則克耳二八-三十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230908.mp3", "size": "約1.5M"},
+{"date": "2023-09-07", "section": "先知書", "content": "厄則克耳二五-二七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230907.mp3", "size": "約1.4M"},
+{"date": "2023-08-29", "section": "先知書", "content": "厄則克耳二二-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230829.mp3", "size": "約1.7M"},
+{"date": "2023-08-28", "section": "先知書", "content": "厄則克耳二十-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230828.mp3", "size": "約1.6M"},
+{"date": "2023-08-25", "section": "先知書", "content": "厄則克耳十七-十九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230825.mp3", "size": "約0.8M"},
+{"date": "2023-08-24", "section": "先知書", "content": "厄則克耳十四-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230824.mp3", "size": "約2.7M"},
+{"date": "2023-08-23", "section": "先知書", "content": "厄則克耳十一-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230823.mp3", "size": "約2.0M"},
+{"date": "2023-08-22", "section": "先知書", "content": "厄則克耳八-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230822.mp3", "size": "約1.7M"},
+{"date": "2023-08-21", "section": "先知書", "content": "厄則克耳四-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230821.mp3", "size": "約1.4M"},
+{"date": "2023-08-18", "section": "先知書", "content": "厄則克耳一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230818.mp3", "size": "約2.0M"},
+{"date": "2023-08-17", "section": "先知書", "content": "巴路克四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230817.mp3", "size": "約2.3M"},
+{"date": "2023-08-15", "section": "先知書", "content": "巴路克一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230815.mp3", "size": "約2.0M"},
+{"date": "2023-08-14", "section": "先知書", "content": "哀歌三-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230814.mp3", "size": "約1.0M"},
+{"date": "2023-08-11", "section": "先知書", "content": "哀歌一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230811.mp3", "size": "約1.5M"},
+{"date": "2023-08-10", "section": "先知書", "content": "耶肋米亞五一-五二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230810.mp3", "size": "約1.4M"},
+{"date": "2023-08-09", "section": "先知書", "content": "耶肋米亞四九-五十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230809.mp3", "size": "約0.9M"},
+{"date": "2023-08-08", "section": "先知書", "content": "耶肋米亞四六-四八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230808.mp3", "size": "約1.2M"},
+{"date": "2023-08-07", "section": "先知書", "content": "耶肋米亞四二-四五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230807.mp3", "size": "約1.5M"},
+{"date": "2023-08-03", "section": "先知書", "content": "耶肋米亞三九-四一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230803.mp3", "size": "約1.0M"},
+{"date": "2023-08-01", "section": "先知書", "content": "耶肋米亞三六-三八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230801.mp3", "size": "約2.2M"},
+{"date": "2023-07-31", "section": "先知書", "content": "耶肋米亞三二-三五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230731.mp3", "size": "約1.9M"},
+{"date": "2023-07-28", "section": "先知書", "content": "耶肋米亞二九-三一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230728.mp3", "size": "約2.3M"},
+{"date": "2023-07-27", "section": "先知書", "content": "耶肋米亞二六-二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230727.mp3", "size": "約2.0M"},
+{"date": "2023-07-25", "section": "先知書", "content": "耶肋米亞二三-二五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230725.mp3", "size": "約1.8M"},
+{"date": "2023-07-21", "section": "先知書", "content": "耶肋米亞十九-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230721.mp3", "size": "約1.9M"},
+{"date": "2023-07-20", "section": "先知書", "content": "耶肋米亞十六-十八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230720.mp3", "size": "約2.1M"},
+{"date": "2023-07-18", "section": "先知書", "content": "耶肋米亞十三-十五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230718.mp3", "size": "約2.5M"},
+{"date": "2023-07-17", "section": "先知書", "content": "耶肋米亞十-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230717.mp3", "size": "約1.8M"},
+{"date": "2023-07-14", "section": "先知書", "content": "耶肋米亞七-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230714.mp3", "size": "約2.2M"},
+{"date": "2023-07-13", "section": "先知書", "content": "耶肋米亞四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230713.mp3", "size": "約2.1M"},
+{"date": "2023-07-12", "section": "先知書", "content": "耶肋米亞一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230712.mp3", "size": "約2.5M"},
+{"date": "2023-07-11", "section": "先知書", "content": "依撒意亞六四-六六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230711.mp3", "size": "約2.0M"},
+{"date": "2023-07-10", "section": "先知書", "content": "依撒意亞六十-六三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230710.mp3", "size": "約1.8M"},
+{"date": "2023-07-06", "section": "先知書", "content": "依撒意亞五四-五九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230706.mp3", "size": "約2.6M"},
+{"date": "2023-07-05", "section": "先知書", "content": "依撒意亞四九-五三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230705.mp3", "size": "約3.2M"},
+{"date": "2023-07-04", "section": "先知書", "content": "依撒意亞四四-四八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230704.mp3", "size": "約1.9M"},
+{"date": "2023-07-03", "section": "先知書", "content": "依撒意亞三九-四三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230703.mp3", "size": "約3.6M"},
+{"date": "2023-06-20", "section": "先知書", "content": "依撒意亞三六-三八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230620.mp3", "size": "約3.1M"},
+{"date": "2023-06-19", "section": "先知書", "content": "依撒意亞三一-三五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230619.mp3", "size": "約1.7M"},
+{"date": "2023-06-16", "section": "先知書", "content": "依撒意亞二六-三十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230616.mp3", "size": "約3.1M"},
+{"date": "2023-06-15", "section": "先知書", "content": "依撒意亞二一-二五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230615.mp3", "size": "約1.8M"},
+{"date": "2023-06-14", "section": "先知書", "content": "依撒意亞十六-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230614.mp3", "size": "約1.0M"},
+{"date": "2023-06-13", "section": "先知書", "content": "依撒意亞十一-十五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230613.mp3", "size": "約2.3M"},
+{"date": "2023-06-12", "section": "先知書", "content": "依撒意亞六-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230612.mp3", "size": "約3.4M"},
+{"date": "2023-06-09", "section": "先知書", "content": "依撒意亞一-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230609.mp3", "size": "約3.4M"},
+{"date": "2023-06-08", "section": "智慧書", "content": "智慧篇十七-十九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230608.mp3", "size": "約1.4M"},
+{"date": "2023-06-07", "section": "智慧書", "content": "智慧篇十三-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230607.mp3", "size": "約2.8M"},
+{"date": "2023-06-06", "section": "智慧書", "content": "智慧篇十-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230606.mp3", "size": "約1.9M"},
+{"date": "2023-06-05", "section": "智慧書", "content": "智慧篇六-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230605.mp3", "size": "約2.0M"},
+{"date": "2023-06-01", "section": "智慧書", "content": "智慧篇一-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230601.mp3", "size": "約2.6M"},
+{"date": "2023-05-31", "section": "智慧書", "content": "雅歌五-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230531.mp3", "size": "約1.0M"},
+{"date": "2023-05-30", "section": "智慧書", "content": "雅歌一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230530.mp3", "size": "約1.1M"},
+{"date": "2023-05-29", "section": "智慧書", "content": "訓道篇九-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230529.mp3", "size": "約1.2M"},
+{"date": "2023-05-26", "section": "智慧書", "content": "訓道篇五-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230526.mp3", "size": "約1.6M"},
+{"date": "2023-05-25", "section": "智慧書", "content": "訓道篇一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230525.mp3", "size": "約2.2M"},
+{"date": "2023-05-24", "section": "智慧書", "content": "德訓篇四七-五一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230524.mp3", "size": "約1.3M"},
+{"date": "2023-05-23", "section": "智慧書", "content": "德訓篇四三-四六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230523.mp3", "size": "約1.6M"},
+{"date": "2023-05-04", "section": "智慧書", "content": "德訓篇一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230504.mp3", "size": "約1.9M"},
+{"date": "2023-05-03", "section": "智慧書", "content": "箴言二九-三一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230503.mp3", "size": "約1.1M"},
+{"date": "2023-05-02", "section": "智慧書", "content": "箴言二六-二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230502.mp3", "size": "約1.0M"},
+{"date": "2023-05-01", "section": "智慧書", "content": "箴言十八-二五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230501.mp3", "size": "約1.4M"},
+{"date": "2023-04-27", "section": "智慧書", "content": "箴言十四-十七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230427.mp3", "size": "約0.9M"},
+{"date": "2023-04-26", "section": "智慧書", "content": "箴言十-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230426.mp3", "size": "約0.7M"},
+{"date": "2023-04-25", "section": "智慧書", "content": "箴言五-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230425.mp3", "size": "約2.0M"},
+{"date": "2023-04-24", "section": "智慧書", "content": "箴言一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230424.mp3", "size": "約1.0M"},
+{"date": "2023-04-21", "section": "智慧書", "content": "約伯傳三八-四二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230421.mp3", "size": "約2.3M"},
+{"date": "2023-04-20", "section": "智慧書", "content": "約伯傳三二-三七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230420.mp3", "size": "約2.8M"},
+{"date": "2023-04-19", "section": "智慧書", "content": "約伯傳二九-三一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230419.mp3", "size": "約1.3M"},
+{"date": "2023-04-18", "section": "智慧書", "content": "約伯傳二五-二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230418.mp3", "size": "約2.3M"},
+{"date": "2023-04-17", "section": "智慧書", "content": "約伯傳二二-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230417.mp3", "size": "約1.6M"},
+{"date": "2023-04-14", "section": "智慧書", "content": "約伯傳十九-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230414.mp3", "size": "約2.1M"},
+{"date": "2023-04-13", "section": "智慧書", "content": "約伯傳十五-十八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230413.mp3", "size": "約1.2M"},
+{"date": "2023-04-12", "section": "智慧書", "content": "約伯傳九-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230412.mp3", "size": "約2.0M"},
+{"date": "2023-04-11", "section": "智慧書", "content": "約伯傳四-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230411.mp3", "size": "約2.4M"},
+{"date": "2023-03-31", "section": "智慧書", "content": "約伯傳一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230331.mp3", "size": "約2.2M"},
+{"date": "2023-03-29", "section": "歷史書", "content": "瑪加伯書下十三-十五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230329.mp3", "size": "約2.9M"},
+{"date": "2023-03-28", "section": "歷史書", "content": "瑪加伯書下十一-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230328.mp3", "size": "約1.8M"},
+{"date": "2023-03-27", "section": "歷史書", "content": "瑪加伯書下八-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230327.mp3", "size": "約2.6M"},
+{"date": "2023-03-24", "section": "歷史書", "content": "瑪加伯書下六-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230324.mp3", "size": "約2.7M"},
+{"date": "2023-03-23", "section": "歷史書", "content": "瑪加伯書下四-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230323.mp3", "size": "約2.7M"},
+{"date": "2023-03-22", "section": "歷史書", "content": "瑪加伯書下一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230322.mp3", "size": "約2.0M"},
+{"date": "2023-03-21", "section": "歷史書", "content": "瑪加伯書上十四-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230321.mp3", "size": "約1.8M"},
+{"date": "2023-03-20", "section": "歷史書", "content": "瑪加伯書上十二-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230320.mp3", "size": "約2.1M"},
+{"date": "2023-03-17", "section": "歷史書", "content": "瑪加伯書上十-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230317.mp3", "size": "約3.7M"},
+{"date": "2023-03-16", "section": "歷史書", "content": "瑪加伯書上八-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230316.mp3", "size": "約2.2M"},
+{"date": "2023-03-15", "section": "歷史書", "content": "瑪加伯書上五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230315.mp3", "size": "約2.2M"},
+{"date": "2023-03-14", "section": "歷史書", "content": "瑪加伯書上三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230314.mp3", "size": "約3.3M"},
+{"date": "2023-03-13", "section": "歷史書", "content": "瑪加伯書上一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230313.mp3", "size": "約1.7M"},
+{"date": "2023-03-03", "section": "歷史書", "content": "友弟德傳十四-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230303.mp3", "size": "約1.8M"},
+{"date": "2023-03-02", "section": "歷史書", "content": "友弟德傳十一-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230302.mp3", "size": "約1.9M"},
+{"date": "2023-03-01", "section": "歷史書", "content": "友弟德傳八-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230301.mp3", "size": "約2.2M"},
+{"date": "2023-02-28", "section": "歷史書", "content": "友弟德傳五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230228.mp3", "size": "約1.8M"},
+{"date": "2023-02-27", "section": "歷史書", "content": "友弟德傳一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230227.mp3", "size": "約1.6M"},
+{"date": "2023-02-25", "section": "歷史書", "content": "多俾亞傳十二-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230225.mp3", "size": "約2.2M"},
+{"date": "2023-02-24", "section": "歷史書", "content": "多俾亞傳九-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230224.mp3", "size": "約1.6M"},
+{"date": "2023-02-23", "section": "歷史書", "content": "多俾亞傳五-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230223.mp3", "size": "約3.0M"},
+{"date": "2023-02-22", "section": "歷史書", "content": "多俾亞傳一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230222.mp3", "size": "約3.5M"},
+{"date": "2023-02-21", "section": "歷史書", "content": "厄斯德拉下十一-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230221.mp3", "size": "約2.0M"},
+{"date": "2023-02-20", "section": "歷史書", "content": "厄斯德拉下八-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230220.mp3", "size": "約2.5M"},
+{"date": "2023-02-17", "section": "歷史書", "content": "厄斯德拉下四-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230217.mp3", "size": "約2.3M"},
+{"date": "2023-02-16", "section": "歷史書", "content": "厄斯德拉下一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230216.mp3", "size": "約1.9M"},
+{"date": "2023-02-15", "section": "歷史書", "content": "厄斯德拉上八-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230215.mp3", "size": "約2.9M"},
+{"date": "2023-02-14", "section": "歷史書", "content": "厄斯德拉上四-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230214.mp3", "size": "約3.1M"},
+{"date": "2023-02-13", "section": "歷史書", "content": "厄斯德拉上一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230213.mp3", "size": "約2.6M"},
+{"date": "2023-02-10", "section": "歷史書", "content": "編年紀下三三-三六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230210.mp3", "size": "約3.3M"},
+{"date": "2023-02-09", "section": "歷史書", "content": "編年紀下二九一-三二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230209.mp3", "size": "約2.8M"},
+{"date": "2023-02-08", "section": "歷史書", "content": "編年紀下二五一-二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230208.mp3", "size": "約2.5M"},
+{"date": "2023-02-07", "section": "歷史書", "content": "編年紀下二一-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230207.mp3", "size": "約2.2M"},
+{"date": "2023-02-06", "section": "歷史書", "content": "編年紀下十七-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230206.mp3", "size": "約2.2M"},
+{"date": "2023-02-02", "section": "歷史書", "content": "編年紀下十三-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230202.mp3", "size": "約1.7M"},
+{"date": "2023-02-01", "section": "歷史書", "content": "編年紀下十-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230201.mp3", "size": "約1.6M"},
+{"date": "2023-01-31", "section": "歷史書", "content": "編年紀下七-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230131.mp3", "size": "約1.5M"},
+{"date": "2023-01-30", "section": "歷史書", "content": "編年紀下四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230130.mp3", "size": "約2.6M"},
+{"date": "2023-01-27", "section": "歷史書", "content": "編年紀下一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230127.mp3", "size": "約2.1M"},
+{"date": "2023-01-26", "section": "歷史書", "content": "編年紀上二五-二九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230126.mp3", "size": "約2.0M"},
+{"date": "2023-01-20", "section": "歷史書", "content": "編年紀上十七-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230120.mp3", "size": "約2.2M"},
+{"date": "2023-01-18", "section": "歷史書", "content": "編年紀上十三-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230118.mp3", "size": "約1.6M"},
+{"date": "2023-01-17", "section": "歷史書", "content": "編年紀上十-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230117.mp3", "size": "約1.4M"},
+{"date": "2023-01-16", "section": "歷史書", "content": "編年紀上七-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230116.mp3", "size": "約1.8M"},
+{"date": "2023-01-13", "section": "歷史書", "content": "編年紀上四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230113.mp3", "size": "約1.8M"},
+{"date": "2023-01-12", "section": "歷史書", "content": "編年紀上一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20230112.mp3", "size": "約1.9M"},
+{"date": "2022-12-21", "section": "歷史書", "content": "列王紀下十八-二五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221221.mp3", "size": "約2.6M"},
+{"date": "2022-12-19", "section": "歷史書", "content": "列王紀下十六-十七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221219.mp3", "size": "約2.7M"},
+{"date": "2022-12-16", "section": "歷史書", "content": "列王紀下十-十五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221216.mp3", "size": "約3.0M"},
+{"date": "2022-12-14", "section": "歷史書", "content": "列王紀下四-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221214.mp3", "size": "約2.6M"},
+{"date": "2022-12-12", "section": "歷史書", "content": "列王紀下一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221212.mp3", "size": "約2.6M"},
+{"date": "2022-12-09", "section": "歷史書", "content": "列王紀上十二-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221209.mp3", "size": "約5.0M"},
+{"date": "2022-12-05", "section": "歷史書", "content": "列王紀上七-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221205.mp3", "size": "約2.6M"},
+{"date": "2022-11-30", "section": "歷史書", "content": "列王紀上一-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221130.mp3", "size": "約3.0M"},
+{"date": "2022-11-28", "section": "歷史書", "content": "撒慕爾紀下十三-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221128.mp3", "size": "約5.1M"},
+{"date": "2022-11-23", "section": "歷史書", "content": "撒慕爾紀下五-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221123.mp3", "size": "約4.1M"},
+{"date": "2022-11-21", "section": "歷史書", "content": "撒慕爾紀下二-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221121.mp3", "size": "約2.7M"},
+{"date": "2022-11-18", "section": "歷史書", "content": "撒慕爾紀上二八-撒慕爾紀下一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221118.mp3", "size": "約2.8M"},
+{"date": "2022-11-16", "section": "歷史書", "content": "撒慕爾紀上二二-二七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221116.mp3", "size": "約3.5M"},
+{"date": "2022-11-14", "section": "歷史書", "content": "撒慕爾紀上十九-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221114.mp3", "size": "約2.0M"},
+{"date": "2022-11-11", "section": "歷史書", "content": "撒慕爾紀上十三-十八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221111.mp3", "size": "約2.8M"},
+{"date": "2022-11-09", "section": "歷史書", "content": "撒慕爾紀上五-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221109.mp3", "size": "約3.5M"},
+{"date": "2022-11-07", "section": "歷史書", "content": "撒慕爾紀上一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221107.mp3", "size": "約3.6M"},
+{"date": "2022-11-03", "section": "歷史書", "content": "盧德傳", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221103.mp3", "size": "約2.5M"},
+{"date": "2022-10-31", "section": "歷史書", "content": "民長紀十三-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221031.mp3", "size": "約2.5M"},
+{"date": "2022-10-28", "section": "歷史書", "content": "民長紀七-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221028.mp3", "size": "約2.1M"},
+{"date": "2022-10-26", "section": "歷史書", "content": "民長紀一-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221026.mp3", "size": "約3.1M"},
+{"date": "2022-10-24", "section": "歷史書", "content": "若蘇厄書二一-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221024.mp3", "size": "約2.8M"},
+{"date": "2022-10-21", "section": "歷史書", "content": "若蘇厄書十三-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221021.mp3", "size": "約2.5M"},
+{"date": "2022-10-19", "section": "歷史書", "content": "若蘇厄書六-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221019.mp3", "size": "約2.2M"},
+{"date": "2022-10-17", "section": "歷史書", "content": "若蘇厄書一-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221017.mp3", "size": "約3.5M"},
+{"date": "2022-10-14", "section": "梅瑟五書", "content": "申命紀三一-三四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221014.mp3", "size": "約2.1M"},
+{"date": "2022-10-12", "section": "梅瑟五書", "content": "申命紀二六-三十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221012.mp3", "size": "約2.9M"},
+{"date": "2022-10-10", "section": "梅瑟五書", "content": "申命紀十二-二五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221010.mp3", "size": "約6.8M"},
+{"date": "2022-10-03", "section": "梅瑟五書", "content": "申命紀九-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20221003.mp3", "size": "約1.9M"},
+{"date": "2022-09-30", "section": "梅瑟五書", "content": "申命紀一-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220930.mp3", "size": "約2.0M"},
+{"date": "2022-09-28", "section": "梅瑟五書", "content": "肋未紀二十-二七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220928.mp3", "size": "約3.9M"},
+{"date": "2022-09-26", "section": "梅瑟五書", "content": "肋未紀十七-十九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220926.mp3", "size": "約1.9M"},
+{"date": "2022-09-23", "section": "梅瑟五書", "content": "肋未紀十一-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220923.mp3", "size": "約1.3M"},
+{"date": "2022-09-21", "section": "梅瑟五書", "content": "肋未紀五-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220921.mp3", "size": "約1.3M"},
+{"date": "2022-09-19", "section": "梅瑟五書", "content": "肋未紀一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220919.mp3", "size": "約1.6M"},
+{"date": "2022-09-16", "section": "梅瑟五書", "content": "戶籍紀三一-三六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220916.mp3", "size": "約2.3M"},
+{"date": "2022-09-14", "section": "梅瑟五書", "content": "戶籍紀二五-三十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220914.mp3", "size": "約2.4M"},
+{"date": "2022-09-12", "section": "梅瑟五書", "content": "戶籍紀二二-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220912.mp3", "size": "約3.2M"},
+{"date": "2022-09-09", "section": "梅瑟五書", "content": "戶籍紀二十-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220909.mp3", "size": "約3.2M"},
+{"date": "2022-09-08", "section": "梅瑟五書", "content": "戶籍紀十七-十九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220908.mp3", "size": "約2.1M"},
+{"date": "2022-09-07", "section": "梅瑟五書", "content": "戶籍紀十三-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220907.mp3", "size": "約3.0M"},
+{"date": "2022-09-06", "section": "梅瑟五書", "content": "戶籍紀十11-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220906.mp3", "size": "約1.8M"},
+{"date": "2022-09-05", "section": "梅瑟五書", "content": "戶籍紀七-十10", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220905.mp3", "size": "約2.3M"},
+{"date": "2022-09-01", "section": "梅瑟五書", "content": "戶籍紀四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220901.mp3", "size": "約1.5M"},
+{"date": "2022-08-31", "section": "梅瑟五書", "content": "戶籍紀一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220831.mp3", "size": "約2.0M"},
+{"date": "2022-08-30", "section": "梅瑟五書", "content": "出谷紀三六-四十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220830.mp3", "size": "約2.0M"},
+{"date": "2022-08-29", "section": "梅瑟五書", "content": "出谷紀二七-三五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220829.mp3", "size": "約3.1M"},
+{"date": "2022-08-25", "section": "梅瑟五書", "content": "出谷紀二三-二六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220825.mp3", "size": "約3.0M"},
+{"date": "2022-08-24", "section": "梅瑟五書", "content": "出谷紀十九-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220824.mp3", "size": "約2.0M"},
+{"date": "2022-08-23", "section": "梅瑟五書", "content": "出谷紀十五22-十八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220823.mp3", "size": "約1.9M"},
+{"date": "2022-08-22", "section": "梅瑟五書", "content": "出谷紀九-十五21", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220822.mp3", "size": "約2.4M"},
+{"date": "2022-08-18", "section": "梅瑟五書", "content": "出谷紀五-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220818.mp3", "size": "約1.8M"},
+{"date": "2022-08-17", "section": "梅瑟五書", "content": "出谷紀一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220817.mp3", "size": "約2.9M"},
+{"date": "2022-08-16", "section": "梅瑟五書", "content": "創世紀四六一-五十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220816.mp3", "size": "約3.4M"},
+{"date": "2022-08-15", "section": "梅瑟五書", "content": "創世紀三九一-四五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220815.mp3", "size": "約1.4M"},
+{"date": "2022-08-11", "section": "梅瑟五書", "content": "創世紀三五一-三八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220811.mp3", "size": "約1.8M"},
+{"date": "2022-08-10", "section": "梅瑟五書", "content": "創世紀三一-三四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220810.mp3", "size": "約2.2M"},
+{"date": "2022-08-09", "section": "梅瑟五書", "content": "創世紀二五12-三十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220809.mp3", "size": "約3.6M"},
+{"date": "2022-08-08", "section": "梅瑟五書", "content": "創世紀十七-二五11", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220808.mp3", "size": "約4.0M"},
+{"date": "2022-08-03", "section": "梅瑟五書", "content": "創世紀十二-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220803.mp3", "size": "約2.9M"},
+{"date": "2022-08-02", "section": "梅瑟五書", "content": "創世紀六-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220802.mp3", "size": "約3.7M"},
+{"date": "2022-08-01", "section": "梅瑟五書", "content": "創世紀一1-六8", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20220801.mp3", "size": "約2.8M"}
+];
+var NT_NOTICES = [];
+var NT_BIBLE = [
+{"date": "2024-07-04", "section": "福音", "content": "瑪二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240704.mp3", "size": "約1.4M"},
+{"date": "2024-07-03", "section": "福音", "content": "瑪二六-二七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240703.mp3", "size": "約2.7M"},
+{"date": "2024-07-02", "section": "福音", "content": "瑪二四-二五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240702.mp3", "size": "約2.0M"},
+{"date": "2024-07-01", "section": "福音", "content": "瑪二三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240701.mp3", "size": "約1.6M"},
+{"date": "2024-06-26", "section": "福音", "content": "瑪二一-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240626.mp3", "size": "約2.4M"},
+{"date": "2024-06-25", "section": "福音", "content": "瑪十九-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240625.mp3", "size": "約1.9M"},
+{"date": "2024-06-24", "section": "福音", "content": "瑪十六13-十九1", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240624.mp3", "size": "約2.8M"},
+{"date": "2024-06-21", "section": "福音", "content": "瑪十三54-十六12", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240621.mp3", "size": "約1.7M"},
+{"date": "2024-06-20", "section": "福音", "content": "瑪十一2-十三53", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240620.mp3", "size": "約2.6M"},
+{"date": "2024-06-19", "section": "福音", "content": "瑪八-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240619.mp3", "size": "約2.8M"},
+{"date": "2024-06-18", "section": "福音", "content": "瑪五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240618.mp3", "size": "約2.3M"},
+{"date": "2024-06-17", "section": "福音", "content": "瑪一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240617.mp3", "size": "約2.3M"},
+{"date": "2024-06-13", "section": "若望默示錄", "content": "默二一-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240613.mp3", "size": "約2.0M"},
+{"date": "2024-06-12", "section": "若望默示錄", "content": "默十九-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240612.mp3", "size": "約1.4M"},
+{"date": "2024-06-11", "section": "若望默示錄", "content": "默十七-十八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240611.mp3", "size": "約1.1M"},
+{"date": "2024-06-10", "section": "若望默示錄", "content": "默十五-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240610.mp3", "size": "約1.2M"},
+{"date": "2024-06-06", "section": "若望默示錄", "content": "默十二-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240606.mp3", "size": "約1.3M"},
+{"date": "2024-06-05", "section": "若望默示錄", "content": "默八-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240605.mp3", "size": "約1.1M"},
+{"date": "2024-06-04", "section": "若望默示錄", "content": "默四-八1", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240604.mp3", "size": "約1.9M"},
+{"date": "2024-06-03", "section": "若望默示錄", "content": "默一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240603.mp3", "size": "約2.0M"},
+{"date": "2024-05-10", "section": "公函", "content": "若望叁書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240510.mp3", "size": "約1.4M"},
+{"date": "2024-05-08", "section": "公函", "content": "若望貳書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240508.mp3", "size": "約1.1M"},
+{"date": "2024-05-07", "section": "公函", "content": "若壹四-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240507.mp3", "size": "約1.6M"},
+{"date": "2024-05-06", "section": "公函", "content": "若壹一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240506.mp3", "size": "約2.1M"},
+{"date": "2024-05-03", "section": "福音", "content": "若二十-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240503.mp3", "size": "約3.1M"},
+{"date": "2024-05-02", "section": "福音", "content": "若十八-十九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240502.mp3", "size": "約2.7M"},
+{"date": "2024-05-01", "section": "福音", "content": "若十五-十七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240501.mp3", "size": "約2.2M"},
+{"date": "2024-04-30", "section": "福音", "content": "若十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240430.mp3", "size": "約2.4M"},
+{"date": "2024-04-29", "section": "福音", "content": "若十一-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240429.mp3", "size": "約2.9M"},
+{"date": "2024-04-26", "section": "福音", "content": "若九-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240426.mp3", "size": "約2.5M"},
+{"date": "2024-04-25", "section": "福音", "content": "若七-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240425.mp3", "size": "約3.6M"},
+{"date": "2024-04-24", "section": "福音", "content": "若五-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240424.mp3", "size": "約2.3M"},
+{"date": "2024-04-23", "section": "福音", "content": "若三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240423.mp3", "size": "約4.0M"},
+{"date": "2024-04-22", "section": "福音", "content": "若一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240422.mp3", "size": "約3.7M"},
+{"date": "2024-04-05", "section": "保祿書信", "content": "希十二-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240405.mp3", "size": "約1.6M"},
+{"date": "2024-04-04", "section": "保祿書信", "content": "希十-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240404.mp3", "size": "約3.0M"},
+{"date": "2024-04-01", "section": "保祿書信", "content": "希八-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240401.mp3", "size": "約1.8M"},
+{"date": "2024-03-28", "section": "保祿書信", "content": "希四14-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240328.mp3", "size": "約2.8M"},
+{"date": "2024-03-26", "section": "保祿書信", "content": "希一1-四13", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240326.mp3", "size": "約2.4M"},
+{"date": "2024-03-25", "section": "公函", "content": "伯多祿後書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240325.mp3", "size": "約1.6M"},
+{"date": "2024-03-22", "section": "公函", "content": "猶達書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240322.mp3", "size": "約2.4M"},
+{"date": "2024-03-21", "section": "公函", "content": "伯前三13-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240321.mp3", "size": "約2.1M"},
+{"date": "2024-03-20", "section": "公函", "content": "伯前一-三12", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240320.mp3", "size": "約2.2M"},
+{"date": "2024-03-19", "section": "公函", "content": "雅三-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240319.mp3", "size": "約2.0M"},
+{"date": "2024-03-18", "section": "公函", "content": "雅一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240318.mp3", "size": "約1.8M"},
+{"date": "2024-03-07", "section": "保祿書信", "content": "弟茂德後書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240307.mp3", "size": "約2.7M"},
+{"date": "2024-03-06", "section": "保祿書信", "content": "弟鐸書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240306.mp3", "size": "約1.8M"},
+{"date": "2024-03-05", "section": "保祿書信", "content": "弟前四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240305.mp3", "size": "約2.2M"},
+{"date": "2024-03-04", "section": "保祿書信", "content": "弟前一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240304.mp3", "size": "約2.3M"},
+{"date": "2024-02-29", "section": "保祿書信", "content": "弗四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240229.mp3", "size": "約2.7M"},
+{"date": "2024-02-28", "section": "保祿書信", "content": "弗一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240228.mp3", "size": "約2.4M"},
+{"date": "2024-02-27", "section": "保祿書信", "content": "哥三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240227.mp3", "size": "約2.1M"},
+{"date": "2024-02-26", "section": "保祿書信", "content": "哥一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240226.mp3", "size": "約2.6M"},
+{"date": "2024-02-23", "section": "福音", "content": "谷十四-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240223.mp3", "size": "約3.1M"},
+{"date": "2024-02-22", "section": "福音", "content": "谷十一-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240222.mp3", "size": "約3.1M"},
+{"date": "2024-02-21", "section": "福音", "content": "谷八27-十52", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240221.mp3", "size": "約1.8M"},
+{"date": "2024-02-20", "section": "福音", "content": "谷六30-八26", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240220.mp3", "size": "約2.2M"},
+{"date": "2024-02-19", "section": "福音", "content": "谷四-六29", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240219.mp3", "size": "約2.2M"},
+{"date": "2024-02-15", "section": "福音", "content": "谷一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240215.mp3", "size": "約3.1M"},
+{"date": "2024-02-09", "section": "保祿書信", "content": "費肋孟書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240209.mp3", "size": "約2.2M"},
+{"date": "2024-02-08", "section": "保祿書信", "content": "斐三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240208.mp3", "size": "約2.4M"},
+{"date": "2024-02-07", "section": "保祿書信", "content": "斐一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240207.mp3", "size": "約2.8M"},
+{"date": "2024-02-06", "section": "保祿書信", "content": "羅十五14-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240206.mp3", "size": "約2.2M"},
+{"date": "2024-02-02", "section": "保祿書信", "content": "羅十二-十五13", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240202.mp3", "size": "約1.8M"},
+{"date": "2024-02-01", "section": "保祿書信", "content": "羅九-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240201.mp3", "size": "約2.5M"},
+{"date": "2024-01-31", "section": "保祿書信", "content": "羅六-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240131.mp3", "size": "約3.4M"},
+{"date": "2024-01-30", "section": "保祿書信", "content": "羅三21-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240130.mp3", "size": "約2.4M"},
+{"date": "2024-01-29", "section": "保祿書信", "content": "羅一-三20", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240129.mp3", "size": "約2.7M"},
+{"date": "2024-01-12", "section": "保祿書信", "content": "迦五-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240112.mp3", "size": "約1.7M"},
+{"date": "2024-01-11", "section": "保祿書信", "content": "迦三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240111.mp3", "size": "約2.8M"},
+{"date": "2024-01-10", "section": "保祿書信", "content": "迦一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240110.mp3", "size": "約3.2M"},
+{"date": "2024-01-09", "section": "保祿書信", "content": "格後十-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240109.mp3", "size": "約1.9M"},
+{"date": "2024-01-08", "section": "保祿書信", "content": "格後八-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240108.mp3", "size": "約1.2M"},
+{"date": "2024-01-06", "section": "保祿書信", "content": "格後五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240106.mp3", "size": "約2.7M"},
+{"date": "2024-01-03", "section": "保祿書信", "content": "格後三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240103.mp3", "size": "約2.3M"},
+{"date": "2024-01-02", "section": "保祿書信", "content": "格後一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240102.mp3", "size": "約2.8M"},
+{"date": "2023-12-29", "section": "保祿書信", "content": "格前十五-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231229.mp3", "size": "約2.1M"},
+{"date": "2023-12-28", "section": "保祿書信", "content": "格前十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231228.mp3", "size": "約2.3M"},
+{"date": "2023-12-27", "section": "保祿書信", "content": "格前十一1-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231227.mp3", "size": "約2.4M"},
+{"date": "2023-12-23", "section": "保祿書信", "content": "格前八-十一1", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231223.mp3", "size": "約3.0M"},
+{"date": "2023-12-22", "section": "保祿書信", "content": "格前七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231222.mp3", "size": "約3.1M"},
+{"date": "2023-12-21", "section": "保祿書信", "content": "格前四18-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231221.mp3", "size": "約1.8M"},
+{"date": "2023-12-20", "section": "保祿書信", "content": "格前一-四18", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231220.mp3", "size": "約2.4M"},
+{"date": "2023-12-19", "section": "保祿書信", "content": "得前四-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231219.mp3", "size": "約1.8M"},
+{"date": "2023-12-18", "section": "保祿書信", "content": "得前一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231218.mp3", "size": "約2.2M"},
+{"date": "2023-12-15", "section": "福音", "content": "宗二七-二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231215.mp3", "size": "約2.2M"},
+{"date": "2023-12-14", "section": "福音", "content": "宗二五-二六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231214.mp3", "size": "約1.7M"},
+{"date": "2023-12-13", "section": "福音", "content": "宗二三-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231213.mp3", "size": "約1.3M"},
+{"date": "2023-12-12", "section": "福音", "content": "宗二一-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231212.mp3", "size": "約1.7M"},
+{"date": "2023-12-11", "section": "福音", "content": "宗十八23-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231211.mp3", "size": "約2.3M"},
+{"date": "2023-12-07", "section": "福音", "content": "宗十七-十八22", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231207.mp3", "size": "約2.2M"},
+{"date": "2023-12-06", "section": "福音", "content": "宗十五-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231206.mp3", "size": "約3.2M"},
+{"date": "2023-12-05", "section": "福音", "content": "宗十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231205.mp3", "size": "約2.8M"},
+{"date": "2023-12-04", "section": "福音", "content": "宗十-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231204.mp3", "size": "約3.6M"},
+{"date": "2023-11-30", "section": "福音", "content": "宗八-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231130.mp3", "size": "約2.8M"},
+{"date": "2023-11-29", "section": "福音", "content": "宗五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231129.mp3", "size": "約3.4M"},
+{"date": "2023-11-28", "section": "福音", "content": "宗三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231128.mp3", "size": "約1.6M"},
+{"date": "2023-11-27", "section": "福音", "content": "宗一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231127.mp3", "size": "約2.5M"},
+{"date": "2023-11-24", "section": "福音", "content": "路二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231124.mp3", "size": "約1.2M"},
+{"date": "2023-11-23", "section": "福音", "content": "路二二-二三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231123.mp3", "size": "約2.5M"},
+{"date": "2023-11-22", "section": "福音", "content": "路十九29-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231122.mp3", "size": "約1.9M"},
+{"date": "2023-11-21", "section": "福音", "content": "路十八-十九28", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231121.mp3", "size": "約1.7M"},
+{"date": "2023-11-20", "section": "福音", "content": "路十五-十七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231120.mp3", "size": "約2.2M"},
+{"date": "2023-11-16", "section": "福音", "content": "路十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231116.mp3", "size": "約1.0M"},
+{"date": "2023-11-15", "section": "福音", "content": "路十38-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231115.mp3", "size": "約2.2M"},
+{"date": "2023-11-14", "section": "福音", "content": "路九51-十37", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231114.mp3", "size": "約2.0M"},
+{"date": "2023-11-13", "section": "福音", "content": "路八-九50", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231113.mp3", "size": "約2.9M"},
+{"date": "2023-11-09", "section": "福音", "content": "路七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231109.mp3", "size": "約1.9M"},
+{"date": "2023-11-08", "section": "福音", "content": "路五-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231108.mp3", "size": "約1.8M"},
+{"date": "2023-11-07", "section": "福音", "content": "路三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231107.mp3", "size": "約1.9M"},
+{"date": "2023-11-06", "section": "福音", "content": "路一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231106.mp3", "size": "約3.3M"}
+];
+/* 新约标题用单字书卷缩写（瑪、若、默…），另加全名别名，搜「默示錄」「若望福音」「宗徒大事錄」也能找到 */
+var NT_BOOK_ALIASES = [
+  ["若望叁書", "若望三書"], ["若望貳書", "若望二書"], ["若壹", "若望一書 若望書信"],
+  ["伯多祿後書", "伯多祿後書 伯後"], ["伯前", "伯多祿前書"],
+  ["弟茂德後書", "弟茂德後書 弟後"], ["弟鐸書", "鐸書"], ["弟前", "弟茂德前書"],
+  ["費肋孟書", "費肋孟書 費"], ["猶達書", "猶達書 猶"],
+  ["格前", "格林多前書"], ["格後", "格林多後書"],
+  ["得前", "得撒洛尼前書"], ["瑪", "瑪竇福音 瑪竇"], ["若", "若望福音 若望"],
+  ["谷", "馬爾谷福音 馬爾谷"], ["路", "路加福音 路加"], ["宗", "宗徒大事錄"],
+  ["默", "若望默示錄 默示錄"], ["羅", "羅馬書"], ["迦", "迦拉達書"],
+  ["弗", "厄弗所書"], ["斐", "斐理伯書"], ["哥", "哥羅森書"],
+  ["希", "希伯來書"], ["雅", "雅各伯書"]
+];
+(function(){
+  var SVG_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
+  var SVG_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+  var SPEEDS = [1, 1.25, 1.5, 2, 0.75];
+  var guideAudios = [];
+  var mainAudio = document.getElementById('audio');
+
+  function fmtTime(sec){
+    if(!isFinite(sec) || sec < 0) sec = 0;
+    sec = Math.floor(sec);
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function fmtDate(iso){
+    var p = iso.split("-");
+    return p[0] + "年" + parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日";
+  }
+  function ntBookAlias(content){
+    for(var k = 0; k < NT_BOOK_ALIASES.length; k++){
+      if(content.indexOf(NT_BOOK_ALIASES[k][0]) === 0) return NT_BOOK_ALIASES[k][1];
+    }
+    return "";
+  }
+
+  function initGuide(prefix, data, order, notices, aliasFn, subgroups){
+    function el(id){ return document.getElementById(prefix + id); }
+    var audio = el('Audio'), nowPlaying = el('Now'), seek = el('Seek');
+    var timeCur = el('TimeCur'), timeDur = el('TimeDur');
+    var btnPlay = el('Play'), icoPlay = el('IcoPlay'), icoPause = el('IcoPause');
+    var listEl = el('List'), toggleAllBtn = el('ToggleAll');
+    var searchBox = el('Search'), resultNote = el('Result'), emptyNote = el('Empty');
+    var currentIndex = -1; /* index into data, -1 = nothing loaded */
+    var speedPos = 0;
+    var rowEls = [];       /* per data index */
+    var groupSections = [];
+    var subSections = [];
+    guideAudios.push(audio);
+
+    function setOpen(sectionEl, open){
+      sectionEl.classList.toggle("open", open);
+      var btn = sectionEl.querySelector(".gtoggle");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.querySelector(".gindicator").textContent = open ? "▾" : "▸";
+      btn.querySelector(".ghint").textContent = open ? "點標題收起本組" : "點標題展開本組";
+    }
+    function updateToggleAllLabel(){
+      var all = groupSections.concat(subSections);
+      var allOpen = all.length > 0 && all.every(function(s){
+        return s.classList.contains("open");
+      });
+      toggleAllBtn.textContent = allOpen ? "全部收起" : "全部展開";
+    }
+
+    /* ---------- build the grouped list ---------- */
+    order.forEach(function(sec){
+      var items = [];
+      data.forEach(function(entry, i){ if(entry.section === sec) items.push(i); });
+      if(!items.length) return;
+
+      var sectionEl = document.createElement("div");
+      sectionEl.className = "ggroup";
+      sectionEl.setAttribute("data-section", sec);
+
+      var h2 = document.createElement("h2");
+      var toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "gtoggle";
+      toggle.setAttribute("aria-expanded", "false");
+      var gname = document.createElement("span");
+      gname.className = "gname";
+      gname.textContent = sec;
+      var gc = document.createElement("span");
+      gc.className = "gcount";
+      gc.textContent = items.length + " 講";
+      var ghint = document.createElement("span");
+      ghint.className = "ghint";
+      ghint.textContent = "點標題展開本組";
+      var ind = document.createElement("span");
+      ind.className = "gindicator";
+      ind.setAttribute("aria-hidden", "true");
+      ind.textContent = "▸";
+      toggle.appendChild(gname);
+      toggle.appendChild(gc);
+      toggle.appendChild(ghint);
+      toggle.appendChild(ind);
+      toggle.addEventListener("click", function(){
+        setOpen(sectionEl, !sectionEl.classList.contains("open"));
+        updateToggleAllLabel();
+      });
+      h2.appendChild(toggle);
+      sectionEl.appendChild(h2);
+      var grule = document.createElement("div");
+      grule.className = "ggrule";
+      sectionEl.appendChild(grule);
+
+      var bodyWrap = document.createElement("div");
+      bodyWrap.className = "gbody";
+      var bodyInner = document.createElement("div");
+      bodyInner.className = "gbody-inner";
+      bodyWrap.appendChild(bodyInner);
+      sectionEl.appendChild(bodyWrap);
+
+      var noticesHere = notices.filter(function(n){ return n.section === sec; });
+      function addNotice(n){
+        var d = document.createElement("div");
+        d.className = "gnotice";
+        d.setAttribute("data-notice", n.text);
+        d.textContent = n.text;
+        bodyInner.appendChild(d);
+      }
+
+      /* ---------- optional foldable subgroups inside this group ---------- */
+      var subDefs = (subgroups && subgroups[sec]) || null;
+      var subInners = null;
+      if(subDefs){
+        subInners = [];
+        subDefs.forEach(function(sd){
+          var subCount = 0;
+          items.forEach(function(bi2){ if(sd.test(data[bi2].content)) subCount++; });
+
+          var subEl = document.createElement("div");
+          subEl.className = "gsubgroup";
+          subEl.setAttribute("data-subgroup", sd.name);
+
+          var h3 = document.createElement("h3");
+          var sToggle = document.createElement("button");
+          sToggle.type = "button";
+          sToggle.className = "gtoggle";
+          sToggle.setAttribute("aria-expanded", "false");
+          var sName = document.createElement("span");
+          sName.className = "gname";
+          sName.textContent = sd.name;
+          var sCount = document.createElement("span");
+          sCount.className = "gcount";
+          sCount.textContent = subCount + " 講";
+          var sHint = document.createElement("span");
+          sHint.className = "ghint";
+          sHint.textContent = "點標題展開本組";
+          var sInd = document.createElement("span");
+          sInd.className = "gindicator";
+          sInd.setAttribute("aria-hidden", "true");
+          sInd.textContent = "▸";
+          sToggle.appendChild(sName);
+          sToggle.appendChild(sCount);
+          sToggle.appendChild(sHint);
+          sToggle.appendChild(sInd);
+          sToggle.addEventListener("click", function(){
+            setOpen(subEl, !subEl.classList.contains("open"));
+            updateToggleAllLabel();
+          });
+          h3.appendChild(sToggle);
+          subEl.appendChild(h3);
+          var sRule = document.createElement("div");
+          sRule.className = "ggrule";
+          subEl.appendChild(sRule);
+
+          var sBody = document.createElement("div");
+          sBody.className = "gbody";
+          var sInner = document.createElement("div");
+          sInner.className = "gbody-inner";
+          sBody.appendChild(sInner);
+          subEl.appendChild(sBody);
+
+          bodyInner.appendChild(subEl);
+          subSections.push(subEl);
+          subInners.push(sInner);
+        });
+      }
+
+      items.forEach(function(bi, pos){
+        noticesHere.forEach(function(n){ if(n.after_index === pos) addNotice(n); });
+        var entry = data[bi];
+        var target = bodyInner;
+        if(subDefs){
+          for(var si = 0; si < subDefs.length; si++){
+            if(subDefs[si].test(entry.content)){ target = subInners[si]; break; }
+          }
+        }
+        var p = entry.date.split("-");
+        var searchText = entry.content + " " + entry.date + " " + fmtDate(entry.date) + " " + parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日";
+        if(aliasFn) searchText = entry.content + " " + aliasFn(entry.content) + " " + entry.section + " " + entry.date + " " + fmtDate(entry.date) + " " + parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日";
+        var row = document.createElement("button");
+        row.type = "button";
+        row.className = "grow";
+        row.setAttribute("data-index", bi);
+        row.setAttribute("data-search", searchText.toLowerCase());
+
+        var meta = document.createElement("span");
+        meta.className = "gmeta";
+        var y = document.createElement("span"); y.className = "gy"; y.textContent = p[0];
+        var md = document.createElement("span"); md.className = "gmd";
+        md.textContent = parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日";
+        meta.appendChild(y); meta.appendChild(md);
+
+        var main = document.createElement("span");
+        main.className = "grow-main";
+        var c = document.createElement("span"); c.className = "gcontent"; c.textContent = entry.content;
+        var sz = document.createElement("span"); sz.className = "gsize";
+        sz.textContent = "音檔 " + entry.size;
+        main.appendChild(c); main.appendChild(sz);
+
+        var play = document.createElement("span");
+        play.className = "gplay";
+        play.innerHTML = SVG_PLAY;
+
+        row.appendChild(meta); row.appendChild(main); row.appendChild(play);
+        row.addEventListener("click", function(){ toggleEntry(bi); });
+        target.appendChild(row);
+        rowEls[bi] = row;
+      });
+      noticesHere.forEach(function(n){ if(n.after_index >= items.length) addNotice(n); });
+
+      groupSections.push(sectionEl);
+      listEl.appendChild(sectionEl);
+    });
+
+    /* ---------- default state: every group and subgroup collapsed ---------- */
+    updateToggleAllLabel();
+
+    /* ---------- expand / collapse all ---------- */
+    toggleAllBtn.addEventListener("click", function(){
+      var all = groupSections.concat(subSections);
+      var anyClosed = all.some(function(s){ return !s.classList.contains("open"); });
+      all.forEach(function(s){
+        if(s.style.display !== "none") setOpen(s, anyClosed);
+      });
+      updateToggleAllLabel();
+    });
+
+    /* ---------- playback (this board's own player) ---------- */
+    function setPlayIcon(playing){
+      icoPlay.style.display = playing ? "none" : "";
+      icoPause.style.display = playing ? "" : "none";
+      if(currentIndex >= 0 && rowEls[currentIndex]){
+        rowEls[currentIndex].querySelector(".gplay").innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
+      }
+    }
+    function markPlayingRow(){
+      rowEls.forEach(function(r, i){
+        if(!r) return;
+        if(i === currentIndex) r.classList.add("playing");
+        else { r.classList.remove("playing"); r.querySelector(".gplay").innerHTML = SVG_PLAY; }
+      });
+    }
+    function loadEntry(i, autoplay){
+      currentIndex = i;
+      var entry = data[i];
+      audio.src = entry.mp3_url;
+      audio.playbackRate = SPEEDS[speedPos];
+      nowPlaying.classList.remove("idle");
+      nowPlaying.innerHTML = "";
+      var d = document.createElement("span");
+      d.className = "gdate"; d.textContent = fmtDate(entry.date);
+      nowPlaying.appendChild(d);
+      nowPlaying.appendChild(document.createTextNode(entry.content));
+      seek.value = 0; seek.style.setProperty("--fill", "0%");
+      timeCur.textContent = "0:00"; timeDur.textContent = "0:00";
+      markPlayingRow();
+      if(autoplay) audio.play();
+    }
+    function toggleEntry(i){
+      if(i === currentIndex && audio.src){
+        if(audio.paused) audio.play(); else audio.pause();
+      } else {
+        loadEntry(i, true);
+      }
+    }
+    btnPlay.addEventListener("click", function(){
+      if(currentIndex < 0){ loadEntry(0, true); return; }
+      if(audio.paused) audio.play(); else audio.pause();
+    });
+    el('Back').addEventListener("click", function(){
+      if(currentIndex >= 0) audio.currentTime = Math.max(0, audio.currentTime - 15);
+    });
+    el('Fwd').addEventListener("click", function(){
+      if(currentIndex >= 0 && isFinite(audio.duration)) audio.currentTime = Math.min(audio.duration, audio.currentTime + 15);
+    });
+    var btnSpeed = el('Speed');
+    btnSpeed.addEventListener("click", function(){
+      speedPos = (speedPos + 1) % SPEEDS.length;
+      audio.playbackRate = SPEEDS[speedPos];
+      btnSpeed.textContent = SPEEDS[speedPos].toFixed(2).replace(/0$/, "") + "×";
+    });
+    audio.addEventListener("play", function(){
+      setPlayIcon(true);
+      /* one track at a time across the whole page */
+      guideAudios.forEach(function(a){ if(a !== audio && !a.paused) a.pause(); });
+      if(mainAudio && !mainAudio.paused) mainAudio.pause();
+    });
+    audio.addEventListener("pause", function(){ setPlayIcon(false); });
+    audio.addEventListener("loadedmetadata", function(){ timeDur.textContent = fmtTime(audio.duration); });
+    audio.addEventListener("timeupdate", function(){
+      if(isFinite(audio.duration) && audio.duration > 0){
+        var pct = (audio.currentTime / audio.duration) * 100;
+        seek.value = pct;
+        seek.style.setProperty("--fill", pct + "%");
+      }
+      timeCur.textContent = fmtTime(audio.currentTime);
+    });
+    seek.addEventListener("input", function(){
+      if(currentIndex >= 0 && isFinite(audio.duration) && audio.duration > 0){
+        audio.currentTime = (seek.value / 100) * audio.duration;
+      }
+    });
+    audio.addEventListener("ended", function(){
+      setPlayIcon(false);
+      if(currentIndex >= 0 && currentIndex < data.length - 1) loadEntry(currentIndex + 1, true);
+    });
+    if(mainAudio) mainAudio.addEventListener("play", function(){ if(!audio.paused) audio.pause(); });
+
+    /* ---------- search ---------- */
+    function applySearch(){
+      var q = searchBox.value.trim().toLowerCase();
+      var visibleTotal = 0;
+      groupSections.forEach(function(secEl){
+        var visible = 0;
+        secEl.querySelectorAll(".grow").forEach(function(row){
+          var hit = !q || row.getAttribute("data-search").indexOf(q) >= 0;
+          row.style.display = hit ? "" : "none";
+          if(hit) visible++;
+        });
+        secEl.querySelectorAll(".gnotice").forEach(function(n){
+          var hit = !q || n.getAttribute("data-notice").toLowerCase().indexOf(q) >= 0;
+          n.style.display = hit ? "" : "none";
+        });
+        secEl.querySelectorAll(".gsubgroup").forEach(function(subEl){
+          var subVisible = 0;
+          subEl.querySelectorAll(".grow").forEach(function(row){
+            if(row.style.display !== "none") subVisible++;
+          });
+          if(q){
+            /* searching: expand subgroups with matches, hide the rest */
+            subEl.style.display = subVisible > 0 ? "" : "none";
+            if(subVisible > 0) setOpen(subEl, true);
+          } else {
+            /* cleared: subgroups back to collapsed */
+            subEl.style.display = "";
+            setOpen(subEl, false);
+          }
+        });
+        if(q){
+          /* searching: auto-expand groups with matches, hide the rest */
+          secEl.style.display = visible > 0 ? "" : "none";
+          if(visible > 0) setOpen(secEl, true);
+        } else {
+          /* cleared: back to default — every group collapsed */
+          secEl.style.display = "";
+          setOpen(secEl, false);
+        }
+        visibleTotal += visible;
+      });
+      updateToggleAllLabel();
+      /* the empty-result note appears ONLY for a typed query with no
+         matches — never while the search box is empty */
+      emptyNote.style.display = (q.length > 0 && visibleTotal === 0) ? "block" : "none";
+      resultNote.textContent = q ? ("找到 " + visibleTotal + " 講") : "";
+    }
+    searchBox.addEventListener("input", applySearch);
+    /* reconcile once on load (e.g. a browser-restored query): with an
+       empty box this keeps every group collapsed and the note hidden */
+    emptyNote.style.display = "none";
+    applySearch();
+  }
+
+  initGuide('ot', OT_BIBLE, ["12小先知書", "先知書", "智慧書", "歷史書", "梅瑟五書"], OT_NOTICES, null);
+  /* 福音組按書卷再分四個子組（講次由新到舊）；路加與宗徒大事錄同為路加所寫的上下卷，合為一組 */
+  var NT_SUBGROUPS = {
+    "福音": [
+      { name: "瑪竇福音", test: function(c){ return c.indexOf("瑪") === 0; } },
+      { name: "若望福音", test: function(c){ return c.indexOf("若") === 0; } },
+      { name: "馬爾谷福音", test: function(c){ return c.indexOf("谷") === 0; } },
+      { name: "路加福音・宗徒大事錄", test: function(c){ return c.indexOf("路") === 0 || c.indexOf("宗") === 0; } }
+    ]
+  };
+  initGuide('nt', NT_BIBLE, ["福音", "保祿書信", "公函", "若望默示錄"], NT_NOTICES, ntBookAlias, NT_SUBGROUPS);
+})();
+</script>
+
+</body>
+</html>
