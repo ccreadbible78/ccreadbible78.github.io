@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>新约导读</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #f6efdd;
+        --bg-soft: #efe5cd;
+        --card: #fffaf0;
+        --ink: #2e2113;
+        --ink-soft: #6d5c40;
+        --gold: #9a7422;
+        --gold-bright: #c39a3a;
+        --line: #ddcda6;
+        --deep: #241708;
+        --deep-ink: #f3e7c8;
+        --notice-bg: #f1e7cd;
+        --shadow: 0 2px 10px rgba(62, 44, 12, 0.10);
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #171208;
+          --bg-soft: #1f1809;
+          --card: #251b0d;
+          --ink: #f0e5c9;
+          --ink-soft: #bfa87c;
+          --gold: #c9a45c;
+          --gold-bright: #e0bc72;
+          --line: #4a3a1c;
+          --deep: #0f0a04;
+          --deep-ink: #f3e7c8;
+          --notice-bg: #2b2110;
+          --shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+          color-scheme: dark;
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif;
+        line-height: 1.6;
+      }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 48px; }
+
+      .backlink {
+        display: inline-flex; align-items: center; gap: 6px;
+        margin: 18px 0 4px;
+        color: var(--gold); text-decoration: none;
+        font-size: 17px; font-weight: 600;
+        padding: 10px 6px 10px 0; min-height: 44px;
+      }
+      .backlink:active { opacity: 0.65; }
+
+      header.page { text-align: center; padding: 10px 4px 20px; }
+      header.page .cross { color: var(--gold); font-size: 22px; letter-spacing: 0.4em; text-indent: 0.4em; }
+      header.page h1 {
+        margin: 6px 0 10px; font-size: 42px; font-weight: 900; letter-spacing: 0.12em; text-indent: 0.12em;
+      }
+      header.page .subtitle { margin: 0 auto; max-width: 560px; font-size: 17px; color: var(--ink-soft); }
+      header.page .count {
+        margin-top: 14px; font-size: 15px; color: var(--gold); font-weight: 700; letter-spacing: 0.2em;
+      }
+      .rule {
+        height: 3px; margin: 18px auto 0; max-width: 520px;
+        background: linear-gradient(to right, transparent, var(--gold), transparent);
+        border: none;
+      }
+
+      /* ---------- player ---------- */
+      .player {
+        position: sticky; top: 0; z-index: 20;
+        background: var(--deep); color: var(--deep-ink);
+        border-radius: 0 0 14px 14px;
+        box-shadow: var(--shadow);
+        padding: 14px 16px 12px;
+        margin: 0 -16px;
+      }
+      @media (min-width: 792px) { .player { margin: 0; border-radius: 14px; } }
+      .player .now {
+        font-size: 17px; font-weight: 700; min-height: 27px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .player .now .date { color: var(--gold-bright); font-weight: 600; margin-right: 8px; }
+      .player .now.idle { color: #cdbd93; font-weight: 400; }
+      .progress-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+      .progress-row .time { font-size: 13px; color: #cdbd93; min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
+      input[type="range"].seek {
+        flex: 1; -webkit-appearance: none; appearance: none;
+        height: 30px; background: transparent; cursor: pointer; margin: 0;
+      }
+      input[type="range"].seek::-webkit-slider-runnable-track {
+        height: 6px; border-radius: 3px;
+        background: linear-gradient(to right, var(--gold-bright) var(--fill, 0%), #57451d var(--fill, 0%));
+      }
+      input[type="range"].seek::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 20px; height: 20px; border-radius: 50%;
+        background: var(--gold-bright); margin-top: -7px; border: 2px solid #f7ecd2;
+      }
+      input[type="range"].seek::-moz-range-track { height: 6px; border-radius: 3px; background: #57451d; }
+      input[type="range"].seek::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--gold-bright); }
+      input[type="range"].seek::-moz-range-thumb {
+        width: 16px; height: 16px; border-radius: 50%; background: var(--gold-bright); border: 2px solid #f7ecd2;
+      }
+      .controls { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 4px; }
+      .controls button {
+        font-family: inherit; cursor: pointer; color: var(--deep-ink);
+        background: rgba(243, 231, 200, 0.10); border: 1px solid rgba(243, 231, 200, 0.25);
+        border-radius: 999px; min-width: 58px; height: 48px; padding: 0 14px;
+        font-size: 15px; font-weight: 700;
+        display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+      }
+      .controls button:active { background: rgba(243, 231, 200, 0.22); }
+      .controls button.main {
+        width: 64px; height: 64px; min-width: 64px; padding: 0;
+        background: var(--gold); border-color: var(--gold); color: #fff8e7;
+      }
+      .controls button.main svg { width: 26px; height: 26px; fill: currentColor; }
+      .controls button.speed { min-width: 66px; font-variant-numeric: tabular-nums; }
+
+      /* ---------- search ---------- */
+      .search { margin: 22px 0 6px; }
+      .search input {
+        width: 100%; font-family: inherit; font-size: 18px;
+        padding: 14px 16px; min-height: 54px;
+        border: 1.5px solid var(--line); border-radius: 10px;
+        background: var(--card); color: var(--ink);
+      }
+      .search input::placeholder { color: var(--ink-soft); }
+      .search input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+      .result-note { font-size: 14px; color: var(--ink-soft); min-height: 22px; margin: 2px 2px 0; }
+
+      /* ---------- list tools ---------- */
+      .list-tools { display: flex; justify-content: flex-end; margin: 14px 0 0; }
+      .toggle-all {
+        font-family: inherit; cursor: pointer;
+        font-size: 15.5px; font-weight: 700; color: var(--gold);
+        background: var(--card); border: 1.5px solid var(--line); border-radius: 999px;
+        padding: 10px 20px; min-height: 46px; box-shadow: var(--shadow);
+      }
+      .toggle-all:active { background: var(--bg-soft); }
+
+      /* ---------- sections & rows ---------- */
+      section.group { margin-top: 22px; }
+      section.group h2 { margin: 0; }
+      .group-toggle {
+        width: 100%; min-height: 62px;
+        display: flex; align-items: center; gap: 10px;
+        font-family: inherit; color: var(--ink); text-align: left;
+        background: none; border: none; cursor: pointer;
+        padding: 12px 6px 10px; margin: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .group-toggle:active { opacity: 0.65; }
+      .group-toggle .gname { font-size: 26px; font-weight: 900; line-height: 1.3; }
+      .group-toggle .gcount { font-size: 15px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+      .group-toggle .ghint { margin-left: auto; font-size: 13.5px; color: var(--ink-soft); white-space: nowrap; }
+      .group-toggle .indicator {
+        flex: 0 0 auto; font-size: 19px; line-height: 1; color: var(--gold);
+        transition: transform 0.3s ease;
+      }
+
+      section.group .grule { height: 2px; background: var(--gold); opacity: 0.55; margin-bottom: 12px; }
+      .group-body {
+        display: grid; grid-template-rows: 0fr; visibility: hidden;
+        transition: grid-template-rows 0.38s ease, visibility 0s linear 0.38s;
+      }
+      section.group.open .group-body {
+        grid-template-rows: 1fr; visibility: visible;
+        transition: grid-template-rows 0.38s ease, visibility 0s;
+      }
+      .group-body-inner { overflow: hidden; min-height: 0; }
+      @media (prefers-reduced-motion: reduce) {
+        .group-body, section.group.open .group-body, .group-toggle .indicator { transition: none; }
+      }
+      .row {
+        display: flex; align-items: center; gap: 14px;
+        width: 100%; text-align: left; font-family: inherit;
+        background: var(--card); color: var(--ink);
+        border: 1px solid var(--line); border-radius: 12px;
+        padding: 14px 16px; margin-bottom: 10px;
+        cursor: pointer; box-shadow: var(--shadow);
+        min-height: 76px;
+      }
+      .row:active { transform: scale(0.995); }
+      .row .meta { flex: 0 0 auto; text-align: center; min-width: 74px; }
+      .row .meta .y { font-size: 21px; font-weight: 900; line-height: 1.15; }
+      .row .meta .md { font-size: 14px; color: var(--ink-soft); }
+      .row .body { flex: 1 1 auto; min-width: 0; border-left: 1px solid var(--line); padding-left: 14px; }
+      .row .body .content { font-size: 19px; font-weight: 700; line-height: 1.45; }
+      .row .body .size { font-size: 13.5px; color: var(--ink-soft); margin-top: 2px; }
+      .row .play {
+        flex: 0 0 auto; width: 54px; height: 54px; border-radius: 50%;
+        background: var(--deep); color: var(--gold-bright);
+        display: inline-flex; align-items: center; justify-content: center;
+        border: none; pointer-events: none;
+      }
+      .row .play svg { width: 21px; height: 21px; fill: currentColor; }
+      .row.playing { border-color: var(--gold); outline: 1.5px solid var(--gold); }
+      .row.playing .play { background: var(--gold); color: #fff8e7; }
+      .notice {
+        background: var(--notice-bg); border: 1px dashed var(--line); border-radius: 12px;
+        padding: 14px 16px; margin-bottom: 10px;
+        font-size: 16.5px; color: var(--ink-soft); text-align: center;
+      }
+      .empty { text-align: center; color: var(--ink-soft); font-size: 17px; padding: 34px 0 8px; display: none; }
+
+      footer.page {
+        margin-top: 44px; border-top: 1px solid var(--line); padding-top: 20px;
+        font-size: 15.5px; color: var(--ink-soft); text-align: center;
+      }
+      footer.page a { color: var(--gold); font-weight: 600; }
+      footer.page p { margin: 6px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <a class="backlink" href="index.html">← 回首页</a>
+
+      <header class="page">
+        <div class="cross">✝</div>
+        <h1>新约导读</h1>
+        <p class="subtitle">《聖經導讀》新約 · 2023–2024年 南港耶穌聖心堂 林思川神父平日彌撒後導讀</p>
+        <p class="count">共 111 講</p>
+        <hr class="rule" />
+      </header>
+
+      <div class="player" id="player">
+        <div class="now idle" id="nowPlaying">點選任一講，即可開始收聽</div>
+        <div class="progress-row">
+          <span class="time" id="timeCur">0:00</span>
+          <input type="range" class="seek" id="seek" min="0" max="100" step="0.1" value="0" aria-label="播放進度" />
+          <span class="time" id="timeDur">0:00</span>
+        </div>
+        <div class="controls">
+          <button type="button" id="btnBack" aria-label="後退15秒">−15秒</button>
+          <button type="button" class="main" id="btnPlay" aria-label="播放或暫停">
+            <svg id="icoPlay" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+            <svg id="icoPause" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          </button>
+          <button type="button" id="btnFwd" aria-label="前進15秒">+15秒</button>
+          <button type="button" class="speed" id="btnSpeed" aria-label="播放速度">1.0×</button>
+        </div>
+      </div>
+
+      <div class="search">
+        <input type="search" id="searchBox" placeholder="搜尋導讀內容或日期，如：若望、2024-07-04" aria-label="搜尋導讀" />
+        <p class="result-note" id="resultNote"></p>
+      </div>
+
+      <div class="list-tools">
+        <button type="button" class="toggle-all" id="toggleAll">全部展開</button>
+      </div>
+
+      <main id="list"></main>
+      <p class="empty" id="emptyNote">沒有符合的導讀，請換個關鍵字試試。</p>
+
+      <footer class="page">
+        <p>資料來源：思高讀經推廣中心《聖經導讀》新約原站頁面（<a href="https://www.ccreadbible.org/Members/Bona/ccreadbible/program/2022biblereading/2022biblereading-mp3-6" target="_blank" rel="noopener">福音</a>、<a href="https://www.ccreadbible.org/Members/Bona/ccreadbible/program/2022biblereading/2022biblereading-mp3-7" target="_blank" rel="noopener">保祿書信</a>、<a href="https://www.ccreadbible.org/Members/Bona/ccreadbible/program/2022biblereading/2022biblereading-mp3-8" target="_blank" rel="noopener">公函</a>、<a href="https://www.ccreadbible.org/Members/Bona/ccreadbible/program/2022biblereading/2022biblereading-mp3-9" target="_blank" rel="noopener">若望默示錄</a>），音檔亦由原站提供。</p>
+        <p>舊約導讀在另一頁：<a href="sheng-jing-dao-du.html">聖經導讀（舊約）→</a></p>
+      </footer>
+    </div>
+
+    <audio id="audio" preload="metadata"></audio>
+
+    <script>
+var NOTICES = [];
+var BIBLE = [
+  {"date": "2024-07-04", "section": "福音", "content": "瑪二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240704.mp3", "size": "約1.4M"},
+  {"date": "2024-07-03", "section": "福音", "content": "瑪二六-二七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240703.mp3", "size": "約2.7M"},
+  {"date": "2024-07-02", "section": "福音", "content": "瑪二四-二五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240702.mp3", "size": "約2.0M"},
+  {"date": "2024-07-01", "section": "福音", "content": "瑪二三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240701.mp3", "size": "約1.6M"},
+  {"date": "2024-06-26", "section": "福音", "content": "瑪二一-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240626.mp3", "size": "約2.4M"},
+  {"date": "2024-06-25", "section": "福音", "content": "瑪十九-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240625.mp3", "size": "約1.9M"},
+  {"date": "2024-06-24", "section": "福音", "content": "瑪十六13-十九1", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240624.mp3", "size": "約2.8M"},
+  {"date": "2024-06-21", "section": "福音", "content": "瑪十三54-十六12", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240621.mp3", "size": "約1.7M"},
+  {"date": "2024-06-20", "section": "福音", "content": "瑪十一2-十三53", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240620.mp3", "size": "約2.6M"},
+  {"date": "2024-06-19", "section": "福音", "content": "瑪八-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240619.mp3", "size": "約2.8M"},
+  {"date": "2024-06-18", "section": "福音", "content": "瑪五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240618.mp3", "size": "約2.3M"},
+  {"date": "2024-06-17", "section": "福音", "content": "瑪一-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240617.mp3", "size": "約2.3M"},
+  {"date": "2024-06-13", "section": "若望默示錄", "content": "默二一-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240613.mp3", "size": "約2.0M"},
+  {"date": "2024-06-12", "section": "若望默示錄", "content": "默十九-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240612.mp3", "size": "約1.4M"},
+  {"date": "2024-06-11", "section": "若望默示錄", "content": "默十七-十八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240611.mp3", "size": "約1.1M"},
+  {"date": "2024-06-10", "section": "若望默示錄", "content": "默十五-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240610.mp3", "size": "約1.2M"},
+  {"date": "2024-06-06", "section": "若望默示錄", "content": "默十二-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240606.mp3", "size": "約1.3M"},
+  {"date": "2024-06-05", "section": "若望默示錄", "content": "默八-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240605.mp3", "size": "約1.1M"},
+  {"date": "2024-06-04", "section": "若望默示錄", "content": "默四-八1", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240604.mp3", "size": "約1.9M"},
+  {"date": "2024-06-03", "section": "若望默示錄", "content": "默一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240603.mp3", "size": "約2.0M"},
+  {"date": "2024-05-10", "section": "公函", "content": "若望叁書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240510.mp3", "size": "約1.4M"},
+  {"date": "2024-05-08", "section": "公函", "content": "若望貳書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240508.mp3", "size": "約1.1M"},
+  {"date": "2024-05-07", "section": "公函", "content": "若壹四-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240507.mp3", "size": "約1.6M"},
+  {"date": "2024-05-06", "section": "公函", "content": "若壹一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240506.mp3", "size": "約2.1M"},
+  {"date": "2024-05-03", "section": "福音", "content": "若二十-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240503.mp3", "size": "約3.1M"},
+  {"date": "2024-05-02", "section": "福音", "content": "若十八-十九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240502.mp3", "size": "約2.7M"},
+  {"date": "2024-05-01", "section": "福音", "content": "若十五-十七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240501.mp3", "size": "約2.2M"},
+  {"date": "2024-04-30", "section": "福音", "content": "若十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240430.mp3", "size": "約2.4M"},
+  {"date": "2024-04-29", "section": "福音", "content": "若十一-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240429.mp3", "size": "約2.9M"},
+  {"date": "2024-04-26", "section": "福音", "content": "若九-十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240426.mp3", "size": "約2.5M"},
+  {"date": "2024-04-25", "section": "福音", "content": "若七-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240425.mp3", "size": "約3.6M"},
+  {"date": "2024-04-24", "section": "福音", "content": "若五-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240424.mp3", "size": "約2.3M"},
+  {"date": "2024-04-23", "section": "福音", "content": "若三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240423.mp3", "size": "約4.0M"},
+  {"date": "2024-04-22", "section": "福音", "content": "若一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240422.mp3", "size": "約3.7M"},
+  {"date": "2024-04-05", "section": "保祿書信", "content": "希十二-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240405.mp3", "size": "約1.6M"},
+  {"date": "2024-04-04", "section": "保祿書信", "content": "希十-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240404.mp3", "size": "約3.0M"},
+  {"date": "2024-04-01", "section": "保祿書信", "content": "希八-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240401.mp3", "size": "約1.8M"},
+  {"date": "2024-03-28", "section": "保祿書信", "content": "希四14-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240328.mp3", "size": "約2.8M"},
+  {"date": "2024-03-26", "section": "保祿書信", "content": "希一1-四13", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240326.mp3", "size": "約2.4M"},
+  {"date": "2024-03-25", "section": "公函", "content": "伯多祿後書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240325.mp3", "size": "約1.6M"},
+  {"date": "2024-03-22", "section": "公函", "content": "猶達書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240322.mp3", "size": "約2.4M"},
+  {"date": "2024-03-21", "section": "公函", "content": "伯前三13-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240321.mp3", "size": "約2.1M"},
+  {"date": "2024-03-20", "section": "公函", "content": "伯前一-三12", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240320.mp3", "size": "約2.2M"},
+  {"date": "2024-03-19", "section": "公函", "content": "雅三-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240319.mp3", "size": "約2.0M"},
+  {"date": "2024-03-18", "section": "公函", "content": "雅一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240318.mp3", "size": "約1.8M"},
+  {"date": "2024-03-07", "section": "保祿書信", "content": "弟茂德後書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240307.mp3", "size": "約2.7M"},
+  {"date": "2024-03-06", "section": "保祿書信", "content": "弟鐸書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240306.mp3", "size": "約1.8M"},
+  {"date": "2024-03-05", "section": "保祿書信", "content": "弟前四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240305.mp3", "size": "約2.2M"},
+  {"date": "2024-03-04", "section": "保祿書信", "content": "弟前一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240304.mp3", "size": "約2.3M"},
+  {"date": "2024-02-29", "section": "保祿書信", "content": "弗四-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240229.mp3", "size": "約2.7M"},
+  {"date": "2024-02-28", "section": "保祿書信", "content": "弗一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240228.mp3", "size": "約2.4M"},
+  {"date": "2024-02-27", "section": "保祿書信", "content": "哥三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240227.mp3", "size": "約2.1M"},
+  {"date": "2024-02-26", "section": "保祿書信", "content": "哥一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240226.mp3", "size": "約2.6M"},
+  {"date": "2024-02-23", "section": "福音", "content": "谷十四-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240223.mp3", "size": "約3.1M"},
+  {"date": "2024-02-22", "section": "福音", "content": "谷十一-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240222.mp3", "size": "約3.1M"},
+  {"date": "2024-02-21", "section": "福音", "content": "谷八27-十52", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240221.mp3", "size": "約1.8M"},
+  {"date": "2024-02-20", "section": "福音", "content": "谷六30-八26", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240220.mp3", "size": "約2.2M"},
+  {"date": "2024-02-19", "section": "福音", "content": "谷四-六29", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240219.mp3", "size": "約2.2M"},
+  {"date": "2024-02-15", "section": "福音", "content": "谷一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240215.mp3", "size": "約3.1M"},
+  {"date": "2024-02-09", "section": "保祿書信", "content": "費肋孟書", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240209.mp3", "size": "約2.2M"},
+  {"date": "2024-02-08", "section": "保祿書信", "content": "斐三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240208.mp3", "size": "約2.4M"},
+  {"date": "2024-02-07", "section": "保祿書信", "content": "斐一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240207.mp3", "size": "約2.8M"},
+  {"date": "2024-02-06", "section": "保祿書信", "content": "羅十五14-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240206.mp3", "size": "約2.2M"},
+  {"date": "2024-02-02", "section": "保祿書信", "content": "羅十二-十五13", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240202.mp3", "size": "約1.8M"},
+  {"date": "2024-02-01", "section": "保祿書信", "content": "羅九-十一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240201.mp3", "size": "約2.5M"},
+  {"date": "2024-01-31", "section": "保祿書信", "content": "羅六-八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240131.mp3", "size": "約3.4M"},
+  {"date": "2024-01-30", "section": "保祿書信", "content": "羅三21-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240130.mp3", "size": "約2.4M"},
+  {"date": "2024-01-29", "section": "保祿書信", "content": "羅一-三20", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240129.mp3", "size": "約2.7M"},
+  {"date": "2024-01-12", "section": "保祿書信", "content": "迦五-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240112.mp3", "size": "約1.7M"},
+  {"date": "2024-01-11", "section": "保祿書信", "content": "迦三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240111.mp3", "size": "約2.8M"},
+  {"date": "2024-01-10", "section": "保祿書信", "content": "迦一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240110.mp3", "size": "約3.2M"},
+  {"date": "2024-01-09", "section": "保祿書信", "content": "格後十-十三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240109.mp3", "size": "約1.9M"},
+  {"date": "2024-01-08", "section": "保祿書信", "content": "格後八-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240108.mp3", "size": "約1.2M"},
+  {"date": "2024-01-06", "section": "保祿書信", "content": "格後五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240106.mp3", "size": "約2.7M"},
+  {"date": "2024-01-03", "section": "保祿書信", "content": "格後三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240103.mp3", "size": "約2.3M"},
+  {"date": "2024-01-02", "section": "保祿書信", "content": "格後一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20240102.mp3", "size": "約2.8M"},
+  {"date": "2023-12-29", "section": "保祿書信", "content": "格前十五-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231229.mp3", "size": "約2.1M"},
+  {"date": "2023-12-28", "section": "保祿書信", "content": "格前十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231228.mp3", "size": "約2.3M"},
+  {"date": "2023-12-27", "section": "保祿書信", "content": "格前十一1-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231227.mp3", "size": "約2.4M"},
+  {"date": "2023-12-23", "section": "保祿書信", "content": "格前八-十一1", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231223.mp3", "size": "約3.0M"},
+  {"date": "2023-12-22", "section": "保祿書信", "content": "格前七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231222.mp3", "size": "約3.1M"},
+  {"date": "2023-12-21", "section": "保祿書信", "content": "格前四18-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231221.mp3", "size": "約1.8M"},
+  {"date": "2023-12-20", "section": "保祿書信", "content": "格前一-四18", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231220.mp3", "size": "約2.4M"},
+  {"date": "2023-12-19", "section": "保祿書信", "content": "得前四-五", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231219.mp3", "size": "約1.8M"},
+  {"date": "2023-12-18", "section": "保祿書信", "content": "得前一-三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231218.mp3", "size": "約2.2M"},
+  {"date": "2023-12-15", "section": "福音", "content": "宗二七-二八", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231215.mp3", "size": "約2.2M"},
+  {"date": "2023-12-14", "section": "福音", "content": "宗二五-二六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231214.mp3", "size": "約1.7M"},
+  {"date": "2023-12-13", "section": "福音", "content": "宗二三-二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231213.mp3", "size": "約1.3M"},
+  {"date": "2023-12-12", "section": "福音", "content": "宗二一-二二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231212.mp3", "size": "約1.7M"},
+  {"date": "2023-12-11", "section": "福音", "content": "宗十八23-二十", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231211.mp3", "size": "約2.3M"},
+  {"date": "2023-12-07", "section": "福音", "content": "宗十七-十八22", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231207.mp3", "size": "約2.2M"},
+  {"date": "2023-12-06", "section": "福音", "content": "宗十五-十六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231206.mp3", "size": "約3.2M"},
+  {"date": "2023-12-05", "section": "福音", "content": "宗十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231205.mp3", "size": "約2.8M"},
+  {"date": "2023-12-04", "section": "福音", "content": "宗十-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231204.mp3", "size": "約3.6M"},
+  {"date": "2023-11-30", "section": "福音", "content": "宗八-九", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231130.mp3", "size": "約2.8M"},
+  {"date": "2023-11-29", "section": "福音", "content": "宗五-七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231129.mp3", "size": "約3.4M"},
+  {"date": "2023-11-28", "section": "福音", "content": "宗三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231128.mp3", "size": "約1.6M"},
+  {"date": "2023-11-27", "section": "福音", "content": "宗一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231127.mp3", "size": "約2.5M"},
+  {"date": "2023-11-24", "section": "福音", "content": "路二四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231124.mp3", "size": "約1.2M"},
+  {"date": "2023-11-23", "section": "福音", "content": "路二二-二三", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231123.mp3", "size": "約2.5M"},
+  {"date": "2023-11-22", "section": "福音", "content": "路十九29-二一", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231122.mp3", "size": "約1.9M"},
+  {"date": "2023-11-21", "section": "福音", "content": "路十八-十九28", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231121.mp3", "size": "約1.7M"},
+  {"date": "2023-11-20", "section": "福音", "content": "路十五-十七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231120.mp3", "size": "約2.2M"},
+  {"date": "2023-11-16", "section": "福音", "content": "路十三-十四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231116.mp3", "size": "約1.0M"},
+  {"date": "2023-11-15", "section": "福音", "content": "路十38-十二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231115.mp3", "size": "約2.2M"},
+  {"date": "2023-11-14", "section": "福音", "content": "路九51-十37", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231114.mp3", "size": "約2.0M"},
+  {"date": "2023-11-13", "section": "福音", "content": "路八-九50", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231113.mp3", "size": "約2.9M"},
+  {"date": "2023-11-09", "section": "福音", "content": "路七", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231109.mp3", "size": "約1.9M"},
+  {"date": "2023-11-08", "section": "福音", "content": "路五-六", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231108.mp3", "size": "約1.8M"},
+  {"date": "2023-11-07", "section": "福音", "content": "路三-四", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231107.mp3", "size": "約1.9M"},
+  {"date": "2023-11-06", "section": "福音", "content": "路一-二", "mp3_url": "https://www.ccreadbible.net/bona/2022BibleReading/BibleReading_20231106.mp3", "size": "約3.3M"}
+];
+
+      var SECTION_ORDER = ["福音", "保祿書信", "公函", "若望默示錄"];
+      var audio = document.getElementById("audio");
+      var nowPlaying = document.getElementById("nowPlaying");
+      var seek = document.getElementById("seek");
+      var timeCur = document.getElementById("timeCur");
+      var timeDur = document.getElementById("timeDur");
+      var btnPlay = document.getElementById("btnPlay");
+      var icoPlay = document.getElementById("icoPlay");
+      var icoPause = document.getElementById("icoPause");
+      var currentIndex = -1; /* index into BIBLE, -1 = nothing loaded */
+      var speeds = [1, 1.25, 1.5, 2, 0.75];
+      var speedPos = 0;
+
+      function fmtTime(sec) {
+        if (!isFinite(sec) || sec < 0) sec = 0;
+        sec = Math.floor(sec);
+        var m = Math.floor(sec / 60), s = sec % 60;
+        return m + ":" + (s < 10 ? "0" : "") + s;
+      }
+      function fmtDate(iso) {
+        var p = iso.split("-");
+        return p[0] + "年" + parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日";
+      }
+      var SVG_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
+      var SVG_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+
+      /* content uses one-character book abbreviations （瑪、若、默…);
+         index each row under the book's full name too, so searching
+         瑪竇福音 / 若望福音 / 默示錄 / 宗徒大事錄 finds it. */
+      var BOOK_ALIASES = [
+        ["若望叁書", "若望三書"], ["若望貳書", "若望二書"], ["若壹", "若望一書 若望書信"],
+        ["伯多祿後書", "伯多祿後書 伯後"], ["伯前", "伯多祿前書"],
+        ["弟茂德後書", "弟茂德後書 弟後"], ["弟鐸書", "鐸書"], ["弟前", "弟茂德前書"],
+        ["費肋孟書", "費肋孟書 費"], ["猶達書", "猶達書 猶"],
+        ["格前", "格林多前書"], ["格後", "格林多後書"],
+        ["得前", "得撒洛尼前書"], ["瑪", "瑪竇福音 瑪竇"], ["若", "若望福音 若望"],
+        ["谷", "馬爾谷福音 馬爾谷"], ["路", "路加福音 路加"], ["宗", "宗徒大事錄"],
+        ["默", "若望默示錄 默示錄"], ["羅", "羅馬書"], ["迦", "迦拉達書"],
+        ["弗", "厄弗所書"], ["斐", "斐理伯書"], ["哥", "哥羅森書"],
+        ["希", "希伯來書"], ["雅", "雅各伯書"]
+      ];
+      function bookAlias(content) {
+        for (var k = 0; k < BOOK_ALIASES.length; k++) {
+          if (content.indexOf(BOOK_ALIASES[k][0]) === 0) return BOOK_ALIASES[k][1];
+        }
+        return "";
+      }
+
+      /* ---------- build the list ---------- */
+      var listEl = document.getElementById("list");
+      var rowEls = []; /* per BIBLE index */
+      var groupSections = [];
+
+      function setOpen(sectionEl, open) {
+        sectionEl.classList.toggle("open", open);
+        var btn = sectionEl.querySelector(".group-toggle");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        btn.querySelector(".indicator").textContent = open ? "▾" : "▸";
+        btn.querySelector(".ghint").textContent = open ? "點標題收起本組" : "點標題展開本組";
+      }
+      function updateToggleAllLabel() {
+        var allOpen = groupSections.length > 0 && groupSections.every(function (s) {
+          return s.classList.contains("open");
+        });
+        document.getElementById("toggleAll").textContent = allOpen ? "全部收起" : "全部展開";
+      }
+
+      SECTION_ORDER.forEach(function (sec) {
+        var items = [];
+        BIBLE.forEach(function (entry, i) { if (entry.section === sec) items.push(i); });
+        if (!items.length) return;
+
+        var sectionEl = document.createElement("section");
+        sectionEl.className = "group";
+        sectionEl.setAttribute("data-section", sec);
+
+        var h2 = document.createElement("h2");
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "group-toggle";
+        toggle.setAttribute("aria-expanded", "false");
+        var gname = document.createElement("span");
+        gname.className = "gname";
+        gname.textContent = sec;
+        var gc = document.createElement("span");
+        gc.className = "gcount";
+        gc.textContent = items.length + " 講";
+        var ghint = document.createElement("span");
+        ghint.className = "ghint";
+        ghint.textContent = "點標題展開本組";
+        var ind = document.createElement("span");
+        ind.className = "indicator";
+        ind.setAttribute("aria-hidden", "true");
+        ind.textContent = "▸";
+        toggle.appendChild(gname);
+        toggle.appendChild(gc);
+        toggle.appendChild(ghint);
+        toggle.appendChild(ind);
+        toggle.addEventListener("click", function () {
+          setOpen(sectionEl, !sectionEl.classList.contains("open"));
+          updateToggleAllLabel();
+        });
+        h2.appendChild(toggle);
+        sectionEl.appendChild(h2);
+        var grule = document.createElement("div");
+        grule.className = "grule";
+        sectionEl.appendChild(grule);
+
+        var bodyWrap = document.createElement("div");
+        bodyWrap.className = "group-body";
+        var bodyInner = document.createElement("div");
+        bodyInner.className = "group-body-inner";
+        bodyWrap.appendChild(bodyInner);
+        sectionEl.appendChild(bodyWrap);
+
+        var noticesHere = NOTICES.filter(function (n) { return n.section === sec; });
+
+        function addNotice(n) {
+          var d = document.createElement("div");
+          d.className = "notice";
+          d.setAttribute("data-notice", n.text);
+          d.textContent = n.text;
+          bodyInner.appendChild(d);
+        }
+
+        items.forEach(function (bi, pos) {
+          noticesHere.forEach(function (n) { if (n.after_index === pos) addNotice(n); });
+          var entry = BIBLE[bi];
+          var p = entry.date.split("-");
+          var row = document.createElement("button");
+          row.type = "button";
+          row.className = "row";
+          row.setAttribute("data-index", bi);
+          row.setAttribute("data-search", (entry.content + " " + bookAlias(entry.content) + " " + entry.section + " " + entry.date + " " + fmtDate(entry.date) + " " + parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日").toLowerCase());
+
+          var meta = document.createElement("span");
+          meta.className = "meta";
+          var y = document.createElement("span"); y.className = "y"; y.textContent = p[0];
+          var md = document.createElement("span"); md.className = "md";
+          md.textContent = parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日";
+          meta.appendChild(y); meta.appendChild(document.createElement("br")); meta.appendChild(md);
+
+          var body = document.createElement("span");
+          body.className = "body";
+          var c = document.createElement("span"); c.className = "content"; c.textContent = entry.content;
+          var sz = document.createElement("span"); sz.className = "size";
+          sz.textContent = "音檔 " + entry.size;
+          body.appendChild(c); body.appendChild(document.createElement("br")); body.appendChild(sz);
+
+          var play = document.createElement("span");
+          play.className = "play";
+          play.innerHTML = SVG_PLAY;
+
+          row.appendChild(meta); row.appendChild(body); row.appendChild(play);
+          row.addEventListener("click", function () { toggleEntry(bi); });
+          bodyInner.appendChild(row);
+          rowEls[bi] = row;
+        });
+        noticesHere.forEach(function (n) { if (n.after_index >= items.length) addNotice(n); });
+
+        groupSections.push(sectionEl);
+        listEl.appendChild(sectionEl);
+      });
+
+      /* ---------- default state: first group open, the rest collapsed ---------- */
+      if (groupSections.length > 0) setOpen(groupSections[0], true);
+      updateToggleAllLabel();
+
+      /* ---------- expand / collapse all ---------- */
+      document.getElementById("toggleAll").addEventListener("click", function () {
+        var anyClosed = groupSections.some(function (s) { return !s.classList.contains("open"); });
+        groupSections.forEach(function (s) {
+          if (s.style.display !== "none") setOpen(s, anyClosed);
+        });
+        updateToggleAllLabel();
+      });
+
+      /* ---------- playback ---------- */
+      function setPlayIcon(playing) {
+        icoPlay.style.display = playing ? "none" : "";
+        icoPause.style.display = playing ? "" : "none";
+        if (currentIndex >= 0 && rowEls[currentIndex]) {
+          rowEls[currentIndex].querySelector(".play").innerHTML = playing ? SVG_PAUSE : SVG_PLAY;
+        }
+      }
+      function markPlayingRow() {
+        rowEls.forEach(function (r, i) {
+          if (!r) return;
+          if (i === currentIndex) r.classList.add("playing");
+          else { r.classList.remove("playing"); r.querySelector(".play").innerHTML = SVG_PLAY; }
+        });
+      }
+      function loadEntry(i, autoplay) {
+        currentIndex = i;
+        var entry = BIBLE[i];
+        audio.src = entry.mp3_url;
+        audio.playbackRate = speeds[speedPos];
+        nowPlaying.classList.remove("idle");
+        nowPlaying.innerHTML = "";
+        var d = document.createElement("span");
+        d.className = "date"; d.textContent = fmtDate(entry.date);
+        nowPlaying.appendChild(d);
+        nowPlaying.appendChild(document.createTextNode(entry.content));
+        seek.value = 0; seek.style.setProperty("--fill", "0%");
+        timeCur.textContent = "0:00"; timeDur.textContent = "0:00";
+        markPlayingRow();
+        if (autoplay) audio.play();
+      }
+      function toggleEntry(i) {
+        if (i === currentIndex && audio.src) {
+          if (audio.paused) audio.play(); else audio.pause();
+        } else {
+          loadEntry(i, true);
+        }
+      }
+      btnPlay.addEventListener("click", function () {
+        if (currentIndex < 0) { loadEntry(0, true); return; }
+        if (audio.paused) audio.play(); else audio.pause();
+      });
+      document.getElementById("btnBack").addEventListener("click", function () {
+        if (currentIndex >= 0) audio.currentTime = Math.max(0, audio.currentTime - 15);
+      });
+      document.getElementById("btnFwd").addEventListener("click", function () {
+        if (currentIndex >= 0 && isFinite(audio.duration)) audio.currentTime = Math.min(audio.duration, audio.currentTime + 15);
+      });
+      var btnSpeed = document.getElementById("btnSpeed");
+      btnSpeed.addEventListener("click", function () {
+        speedPos = (speedPos + 1) % speeds.length;
+        audio.playbackRate = speeds[speedPos];
+        btnSpeed.textContent = speeds[speedPos].toFixed(2).replace(/0$/, "") + "×";
+      });
+      audio.addEventListener("play", function () { setPlayIcon(true); });
+      audio.addEventListener("pause", function () { setPlayIcon(false); });
+      audio.addEventListener("loadedmetadata", function () { timeDur.textContent = fmtTime(audio.duration); });
+      audio.addEventListener("timeupdate", function () {
+        if (isFinite(audio.duration) && audio.duration > 0) {
+          var pct = (audio.currentTime / audio.duration) * 100;
+          seek.value = pct;
+          seek.style.setProperty("--fill", pct + "%");
+        }
+        timeCur.textContent = fmtTime(audio.currentTime);
+      });
+      seek.addEventListener("input", function () {
+        if (currentIndex >= 0 && isFinite(audio.duration) && audio.duration > 0) {
+          audio.currentTime = (seek.value / 100) * audio.duration;
+        }
+      });
+      audio.addEventListener("ended", function () {
+        setPlayIcon(false);
+        if (currentIndex >= 0 && currentIndex < BIBLE.length - 1) loadEntry(currentIndex + 1, true);
+      });
+
+      /* ---------- search ---------- */
+      var searchBox = document.getElementById("searchBox");
+      var resultNote = document.getElementById("resultNote");
+      var emptyNote = document.getElementById("emptyNote");
+      searchBox.addEventListener("input", function () {
+        var q = searchBox.value.trim().toLowerCase();
+        var visibleTotal = 0;
+        document.querySelectorAll("section.group").forEach(function (secEl) {
+          var visible = 0;
+          secEl.querySelectorAll(".row").forEach(function (row) {
+            var hit = !q || row.getAttribute("data-search").indexOf(q) >= 0;
+            row.style.display = hit ? "" : "none";
+            if (hit) visible++;
+          });
+          secEl.querySelectorAll(".notice").forEach(function (n) {
+            var hit = !q || n.getAttribute("data-notice").toLowerCase().indexOf(q) >= 0;
+            n.style.display = hit ? "" : "none";
+          });
+          if (q) {
+            /* searching: auto-expand groups with matches, hide the rest */
+            secEl.style.display = visible > 0 ? "" : "none";
+            if (visible > 0) setOpen(secEl, true);
+          } else {
+            /* cleared: back to default — first group open, the rest collapsed */
+            secEl.style.display = "";
+            setOpen(secEl, secEl === groupSections[0]);
+          }
+          visibleTotal += visible;
+        });
+        updateToggleAllLabel();
+        emptyNote.style.display = (q && visibleTotal === 0) ? "block" : "none";
+        resultNote.textContent = q ? ("找到 " + visibleTotal + " 講") : "";
+      });
+    </script>
+  </body>
+</html>
