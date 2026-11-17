@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>make.fun 账号确认签名</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; margin: 0; padding: 20px; background: #f5f5f7; color: #222; line-height: 1.6; }
+  .card { background: #fff; border-radius: 14px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  h2 { font-size: 16px; margin: 0 0 8px; }
+  p { margin: 8px 0; font-size: 15px; }
+  .msg { background: #f0f0f2; border-radius: 8px; padding: 12px; font-size: 13px; word-break: break-all; white-space: pre-wrap; font-family: monospace; }
+  .sig { background: #eef6ee; border-radius: 8px; padding: 12px; font-size: 13px; word-break: break-all; white-space: pre-wrap; font-family: monospace; }
+  button { display: block; width: 100%; padding: 14px; font-size: 17px; font-weight: 600; color: #fff; background: #007aff; border: none; border-radius: 12px; margin: 10px 0; cursor: pointer; }
+  button.secondary { background: #8e8e93; }
+  button:disabled { background: #c7c7cc; }
+  .status { font-size: 14px; padding: 10px; border-radius: 8px; margin: 10px 0; }
+  .ok { background: #e6f7e6; color: #1d7a1d; }
+  .err { background: #fdecea; color: #b3261e; }
+  .warn { background: #fff4e0; color: #8a5a00; }
+  .hidden { display: none; }
+  .small { font-size: 13px; color: #666; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>make.fun 账号确认签名</h1>
+  <p>这是 make.fun 要求的一次账号确认：用你登录用的 <b>Phantom 钱包</b>签一句话，确认把奖金收款指定到你的 OneKey 地址。签名<b>不转钱、不花手续费</b>，不碰私钥和助记词。</p>
+  <p class="small">用法：在 Phantom App 内置浏览器里打开这个页面（Phantom App → 浏览器/发现，粘贴链接），点下面的按钮签名。签完把签名发给 Muse，Muse 立即提交参赛。<b>这个确认 5 分钟内有效，请尽快签。</b></p>
+</div>
+
+<div class="card">
+  <h2>要签的原话（一个字都不能改）</h2>
+  <div class="msg" id="msgText">（未传入消息）</div>
+  <p class="small">确认编号：<span id="challengeId">（未传入）</span></p>
+</div>
+
+<div class="card">
+  <h2>签名</h2>
+  <div id="status" class="status warn">未连接钱包。点下面按钮连接 Phantom 并签名。</div>
+  <button id="signBtn" onclick="sign()">连接 Phantom 并签名</button>
+  <div id="result" class="hidden">
+    <p><b>连接的钱包地址：</b></p>
+    <div class="sig" id="walletAddr"></div>
+    <p id="addrWarn" class="hidden" style="color:#b3261e"><b>注意：这个地址不是登录用的 Phantom 地址，请切换到 FaRt…PbdW 那个账户再签。</b></p>
+    <p><b>签名（base58，把这段发给 Muse）：</b></p>
+    <div class="sig" id="sig58"></div>
+    <button class="secondary" onclick="copyText('sig58')">复制签名</button>
+    <p class="small">备用（base64，如果 Muse 说 base58 不行再发这个）：</p>
+    <div class="sig" id="sig64"></div>
+    <button class="secondary" onclick="copyText('sig64')">复制备用签名</button>
+  </div>
+</div>
+
+<script>
+var params = new URLSearchParams(window.location.search);
+var MSG = params.get("msg") || "";
+var EXPECTED = params.get("wallet") || "";
+var CHID = params.get("id") || "";
+document.getElementById("msgText").textContent = MSG || "（未传入消息，请用 Muse 给你的完整链接打开）";
+document.getElementById("challengeId").textContent = CHID || "（未传入）";
+
+var B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function toBase58(bytes) {
+  var digits = [0];
+  for (var i = 0; i < bytes.length; i++) {
+    var carry = bytes[i];
+    for (var j = 0; j < digits.length; j++) {
+      carry += digits[j] << 8;
+      digits[j] = carry % 58;
+      carry = (carry / 58) | 0;
+    }
+    while (carry > 0) { digits.push(carry % 58); carry = (carry / 58) | 0; }
+  }
+  var out = "";
+  for (var k = 0; k < bytes.length && bytes[k] === 0; k++) out += "1";
+  for (var m = digits.length - 1; m >= 0; m--) out += B58[digits[m]];
+  return out;
+}
+function toBase64(bytes) {
+  var bin = "";
+  for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function setStatus(text, cls) {
+  var el = document.getElementById("status");
+  el.textContent = text;
+  el.className = "status " + cls;
+}
+function findProvider() {
+  if (window.phantom && window.phantom.solana) return window.phantom.solana;
+  if (window.solana) return window.solana;
+  if (window.onekey && window.onekey.solana) return window.onekey.solana;
+  return null;
+}
+function copyText(id) {
+  var t = document.getElementById(id).textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(function(){ alert("已复制"); }, function(){ alert("复制失败，请长按手动复制"); });
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); alert("已复制"); } catch(e) { alert("复制失败，请长按手动复制"); }
+    document.body.removeChild(ta);
+  }
+}
+async function sign() {
+  var btn = document.getElementById("signBtn");
+  btn.disabled = true;
+  try {
+    if (!MSG) { setStatus("这个页面没有带确认消息，请用 Muse 给你的完整链接打开。", "err"); btn.disabled = false; return; }
+    var provider = findProvider();
+    if (!provider) {
+      setStatus("没检测到钱包。请在 Phantom App 内置浏览器里打开这个页面（Phantom App → 浏览器，粘贴链接）再试。", "err");
+      btn.disabled = false;
+      return;
+    }
+    setStatus("正在连接钱包…", "warn");
+    var resp;
+    try { resp = await provider.connect(); } catch(e) { resp = null; }
+    var pubkey = (resp && resp.publicKey) ? resp.publicKey : provider.publicKey;
+    if (!pubkey) {
+      setStatus("连接失败：没拿到钱包地址。请确认已在 Phantom 里解锁并允许连接。", "err");
+      btn.disabled = false;
+      return;
+    }
+    var addr = pubkey.toBase ? pubkey.toBase58() : String(pubkey);
+    document.getElementById("walletAddr").textContent = addr;
+    if (EXPECTED && addr !== EXPECTED) document.getElementById("addrWarn").classList.remove("hidden");
+    setStatus("钱包已连接，正在请求签名…请在 Phantom 里确认。", "warn");
+    var msgBytes = new TextEncoder().encode(MSG);
+    var sigResp;
+    try {
+      sigResp = await provider.signMessage({ message: msgBytes, display: "utf8" });
+    } catch (e1) {
+      try { sigResp = await provider.signMessage(msgBytes); }
+      catch (e2) { throw e1; }
+    }
+    var sig = sigResp && sigResp.signature ? sigResp.signature : sigResp;
+    if (typeof sig === "string") {
+      document.getElementById("sig58").textContent = sig;
+      document.getElementById("sig64").textContent = "(签名已是字符串形式，请直接发 base58 这段)";
+    } else {
+      var sigBytes = sig instanceof Uint8Array ? sig : new Uint8Array(sig);
+      document.getElementById("sig58").textContent = toBase58(sigBytes);
+      document.getElementById("sig64").textContent = toBase64(sigBytes);
+    }
+    document.getElementById("result").classList.remove("hidden");
+    setStatus("签名成功！复制上面 base58 那段签名，马上发给 Muse（确认 5 分钟内有效）。", "ok");
+  } catch (err) {
+    setStatus("签名失败：" + (err && err.message ? err.message : err) + "。请重试，或确认是在 Phantom App 内置浏览器里打开的。", "err");
+  }
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>
