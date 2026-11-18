@@ -164,7 +164,7 @@ def norm_title(t):
     s = re.sub(r"\s+", "", t)
     s = s.replace("卅", "三十").replace("廿", "二十")
     s = re.sub(r"^(甲年|乙年|丙年)", "", s)
-  s = s.replace("第", "")
+      s = s.replace("第", "")
     return s
 
 
