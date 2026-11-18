@@ -451,6 +451,18 @@ def main():
     latest_date = "%s-%s-%s" % (latest_ymd[:4], latest_ymd[4:6], latest_ymd[6:8])
     if latest_ymd <= top_ymd:
         print("已是最新（置顶 %s，最新 %s），不用更新。" % (top_date, latest_date))
+        # 没有新讲道时也要按当前置顶重建同一礼仪日：脚本逻辑（如标题归一化）
+        # 改了之后，旧区块可能还是按老逻辑生成的空区块，不刷新就一直是空的。
+        entries_index = parse_entries_index(html)
+        if entries_index:
+            top_title = entries_index[0][1]
+            html2, lit_count, lit_groups = build_liturgical(
+                html, top_date, top_title, {}, entries_index)
+        if html2 != html:
+            open(INDEX_HTML, "w", encoding="utf-8").write(html2)
+            print("同一礼仪日已刷新：%d 组 %d 条。" % (lit_groups, lit_count))
+        else:
+            print("同一礼仪日无变化：%d 组 %d 条。" % (lit_groups, lit_count))
         return 0
 
     # 把置顶之后到最新之间的每一天都补回（不只补最新一天），从新到旧收集
