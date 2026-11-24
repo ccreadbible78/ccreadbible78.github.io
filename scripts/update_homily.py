@@ -461,10 +461,10 @@ def main():
         if html2 != html:
             open(INDEX_HTML, "w", encoding="utf-8").write(html2)
             print("同一礼仪日已刷新：%d 组 %d 条。" % (lit_groups, lit_count))
-        else:
-            print("同一礼仪日无变化：%d 组 %d 条。" % (lit_groups, lit_count))
-        return 0
-
+            else:
+                    print("同一礼仪日无变化：%d 组 %d 条。" % (lit_groups, lit_count))
+            return 0
+    
     # 把置顶之后到最新之间的每一天都补回（不只补最新一天），从新到旧收集
     monthly_cache = {}
 
@@ -549,6 +549,11 @@ def main():
     html = re.sub(r'max="2026-\d{2}-\d{2}"', 'max="%s"' % first["date"], html)
     html = re.sub(r"按日期查找（2026年1月1日 — \d+月\d+日）",
                   "按日期查找（2026年1月1日 — %d月%d日）" % (d.month, d.day), html)
+# 页脚“本页收录2026年1月1日至…共…条”：之前只改了“共 N 条”和“—”版日期范围，
+# 页脚这句是“至…共…条”格式，从没被改过，每天都会落后一天，顺手一起改。
+if total:
+  html = re.sub(r"本页收录2026年1月1日至\d+月\d+日共\d+条",
+                              "本页收录2026年1月1日至%d月%d日共%d条" % (d.month, d.day, total), html)
     # 12 月按钮：原来只有 1–11 月，新月份是 12 月时补一个
     if d.month == 12 and 'data-month="12"' not in html:
         html = html.replace(
